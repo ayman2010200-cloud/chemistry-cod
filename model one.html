@@ -1,0 +1,2978 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>First Guiding Model with answer and explination (Chemistry 2026)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b1220;
+            --bg-2: #16233b;
+            --panel: rgba(255, 255, 255, .06);
+            --border: rgba(255, 255, 255, .14);
+            --text: #e8eef7;
+            --muted: #9aa7bd;
+            --blue: #38bdf8;
+            --purple: #8b5cf6;
+            --green: #4ade80;
+            --amber: #fbbf24;
+            --red: hsl(18, 100%, 28%);
+            --skyblue: #87CEEB;
+            --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+        }
+
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --bg-2: #e2e8f0;
+            --panel: rgba(0, 0, 0, .04);
+            --border: rgba(0, 0, 0, .12);
+            --text: #0f172a;
+            --muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", "Tajawal", Roboto, Arial, sans-serif;
+            background: radial-gradient(1200px 700px at 50% 35%, var(--bg-2) 0%, var(--bg) 60%);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background .3s, color .3s;
+            padding: 20px 20px 20px 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .document {
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            position: relative;
+            z-index: 10;
+            gap: 20px;
+        }
+
+        .content-area {
+            flex: 1;
+            min-width: 700px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--panel);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            animation: slideUp .5s cubic-bezier(.2, .9, .3, 1.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(15px);
+                opacity: 0
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1
+            }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+            background: linear-gradient(135deg, #e88401, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .q-container {
+            margin-bottom: 35px;
+            transition: all 0.3s ease;
+            animation: slideUp .4s ease;
+        }
+
+        .q {
+            color: var(--red);
+            font-size: 20px;
+            font-weight: 900;
+            margin: 18px 0 14px 0;
+            padding: 14px 18px;
+            background: var(--skyblue);
+            border-left: 4px solid #7ed2f3;
+            border-radius: 12px;
+            line-height: 1.6;
+            box-shadow: 0 4px 20px rgba(135, 206, 235, 0.35), 0 0 8px rgba(135, 206, 235, 0.2);
+        }
+
+        .c {
+            color: var(--text);
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .c.grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .c.grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        .choice-option {
+            padding: 14px 16px;
+            background: rgba(56, 189, 248, .06);
+            border: 1px solid rgba(56, 189, 248, .25);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-option:hover {
+            background: rgba(56, 189, 248, .15);
+            transform: translateX(4px);
+            border-color: var(--blue);
+        }
+
+        .choice-option.correct-choice {
+            background: rgba(74, 222, 128, .25) !important;
+            border-color: var(--green) !important;
+            color: var(--green) !important;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(74, 222, 128, .2);
+        }
+
+        .choice-option.correct-choice::after {
+            content: ' ✓';
+            font-weight: 900;
+            margin-left: 8px;
+        }
+
+        .choice-option.wrong-choice {
+            background: rgba(239, 68, 68, .25) !important;
+            border-color: var(--red) !important;
+            color: var(--red) !important;
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .choice-option.wrong-choice::after {
+            content: ' ✗';
+            font-weight: 900;
+            margin-left: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px;
+            margin: 15px 0;
+            border: 2px solid var(--green);
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            background: var(--panel);
+            border: 1px solid red;
+            border-radius: 12px;
+            text-align: center;
+            transition: .2s;
+        }
+
+        td:hover {
+            background: rgba(56, 189, 248, .1);
+            border-color: var(--red);
+        }
+
+        th {
+            color: var(--blue);
+            font-weight: 800;
+            background: rgba(56, 189, 248, .08);
+        }
+
+        .answer-box {
+            color: var(--blue);
+            font-size: 16px;
+            margin: 14px 0 14px 20px;
+            padding: 16px;
+            background: rgba(56, 189, 248, .08);
+            border: 2px dashed rgba(56, 189, 248, .3);
+            border-left: 4px solid var(--blue);
+            border-radius: 12px;
+            line-height: 1.7;
+            font-weight: 500;
+            display: none;
+            animation: slideUp .3s ease;
+        }
+
+        .ans-title {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            margin-right: 8px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .exp-title {
+            color: var(--amber);
+            font-weight: 800;
+            margin: 10px 0 5px 0;
+            display: block;
+        }
+
+        .diagram-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 15px;
+            text-align: center;
+            color: var(--red);
+            font-weight: bold;
+        }
+
+        .box {
+            border: 2px dashed rgba(239, 68, 68, .5);
+            background: rgba(239, 68, 68, .08);
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .arrow {
+            font-size: 24px;
+            line-height: 1;
+            color: var(--amber);
+        }
+
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0 10px 0;
+            padding: 15px;
+            background-color: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 14px;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, .12);
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, .6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #show-answer-btn {
+            background: linear-gradient(135deg, rgba(56, 189, 248, .22), rgba(139, 92, 246, .18));
+            border-color: rgba(56, 189, 248, .6);
+            font-weight: 700;
+        }
+
+        #show-answer-btn:hover {
+            background: linear-gradient(135deg, rgba(56, 189, 248, .3), rgba(139, 92, 246, .25));
+        }
+
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            user-select: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='450' height='300'%3E%3Ctext x='50%25' y='50%25' transform='rotate(-30 225 150)' text-anchor='middle' font-family='sans-serif' font-size='28' font-weight='bold' fill='%23ffffff' opacity='0.10'%3EProf./ Ayman Mansour%3C/text%3E%3C/svg%3E");
+            background-repeat: repeat;
+        }
+
+        [data-theme="light"] .watermark {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='450' height='300'%3E%3Ctext x='50%25' y='50%25' transform='rotate(-30 225 150)' text-anchor='middle' font-family='sans-serif' font-size='28' font-weight='bold' fill='%23000000' opacity='0.12'%3EProf./ Ayman Mansour%3C/text%3E%3C/svg%3E");
+        }
+
+        .contact-buttons {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .contact-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .5);
+        }
+
+        .contact-btn.phone {
+            background: hwb(186 27% 6%);
+        }
+
+        .contact-btn.whatsapp {
+            background: hsl(252, 89%, 46%);
+        }
+
+        .question-blocks {
+            width: 250px;
+            background: var(--panel);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            border-left: none;
+            border-radius: 0 20px 20px 0;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .block-title {
+            font-weight: 800;
+            color: var(--blue);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .block-item {
+            padding: 10px 14px;
+            margin: 6px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: .2s;
+            font-size: 14px;
+            background: rgba(0, 0, 0, .1);
+            border: 1px solid transparent;
+        }
+
+        .block-item:hover {
+            background: rgba(255, 255, 255, .05);
+            border-color: var(--border);
+        }
+
+        .block-item.active {
+            background: rgba(56, 189, 248, .15);
+            border-color: var(--blue);
+            color: var(--blue);
+            font-weight: 700;
+            transform: translateX(4px);
+        }
+
+        .current-question-indicator {
+            text-align: center;
+            font-weight: 800;
+            margin: 15px 0;
+            color: var(--amber);
+            background: rgba(251, 191, 36, .1);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px dashed rgba(251, 191, 36, .4);
+        }
+
+        @media print {
+
+            html,
+            body {
+                display: none !important;
+            }
+        }
+
+        @media(max-width:768px) {
+            body {
+                padding: 20px;
+            }
+
+            .document {
+                flex-direction: column;
+            }
+
+            .question-blocks {
+                width: 100%;
+                position: static;
+                margin-bottom: 20px;
+                border-radius: 20px;
+                border-left: 1px solid var(--border);
+            }
+
+            .content-area {
+                min-width: 100%;
+                padding: 18px;
+                margin: 0;
+            }
+        }
+
+        /* ==========================================
+           PREMIUM SECURITY SUITE STYLES
+           ========================================== */
+
+        /* Disable text selection and copying globally */
+        body,
+        html,
+        *,
+        .q,
+        .c,
+        td,
+        th,
+        .answer-box {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+
+        /* Styling for the toast alert */
+        .security-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(239, 68, 68, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #ef4444;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(239, 68, 68, 0.1);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .security-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .security-toast i {
+            font-size: 16px;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+                text-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Fullscreen Security Overlay */
+        .security-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 18, 32, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 999999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e8eef7;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .security-overlay.show {
+            display: flex;
+        }
+
+        .security-card {
+            background: rgba(22, 35, 59, 0.7);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 24px;
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.05);
+            animation: cardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .security-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ef4444, #fbbf24, #ef4444);
+            background-size: 200% 100%;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        .security-card .warning-icon {
+            font-size: 60px;
+            color: #ef4444;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: heartBeat 1.5s infinite;
+        }
+
+        .security-card h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ef4444;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .security-card p {
+            font-size: 15px;
+            color: #9aa7bd;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .security-violation-badge {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px dashed rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 0.5px;
+        }
+
+        .security-btn {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: none;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .security-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+            background: linear-gradient(135deg, #f87171, #dc2626);
+        }
+
+        .security-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Locked Exam Styling overrides */
+        .security-card.locked {
+            border-color: #ef4444;
+        }
+
+        .security-card.locked .warning-icon {
+            color: #ef4444;
+            animation: none;
+        }
+
+        .security-card.locked h2 {
+            color: #ef4444;
+        }
+
+        .contact-admin {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .admin-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .admin-link:hover {
+            color: #7dd3fc;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes cardPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes heartBeat {
+            0% {
+                transform: scale(1);
+            }
+
+            14% {
+                transform: scale(1.1);
+            }
+
+            28% {
+                transform: scale(1);
+            }
+
+            42% {
+                transform: scale(1.1);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+        }
+
+        /* Extreme print block */
+        @media print {
+
+            body,
+            html,
+            .main-content,
+            .document,
+            .watermark,
+            .contact-buttons {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                width: 0 !important;
+                overflow: hidden !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Security Toast and Overlay -->
+    <div id="security-toast" class="security-toast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="security-toast-message">Prohibited action detected!</span>
+    </div>
+
+    <div id="security-overlay" class="security-overlay">
+        <div class="security-card" id="security-card">
+            <div class="warning-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2 id="security-title">Security Warning</h2>
+            <p id="security-message">You have navigated away from the active exam environment. This behavior is flagged
+                as a potential academic integrity violation.</p>
+            <div class="security-violation-badge" id="security-violation-badge">Violation Count: 1 / 3</div>
+            <button class="security-btn" id="security-resume-btn">Acknowledge & Resume</button>
+
+            <div class="contact-admin" id="security-contact" style="display: none;">
+                <a href="tel:01068018005" class="admin-link">
+                    <i class="fa-solid fa-phone"></i> Call Instructor
+                </a>
+                <a href="https://wa.me/201287996430" class="admin-link" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="watermark"></div> <!-- Brand Logo Top Left -->
+    <div style="position: fixed; top: 30px; left: 20px; display: flex; align-items: center; gap: 16px; z-index: 1000;">
+        <div
+            style="width: 50px; height: 50px; border-radius: 10px; box-shadow: 0 68px 10px rgba(56, 189, 248, 0.4); overflow: hidden;">
+            <img src="https://i.postimg.cc/JhQfYL1D/logo.jpg" alt="Logo"
+                style="width: 100%; height: 100%; object-fit: cover;">
+
+
+        </div>
+        <span
+            style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px;">Chemistry
+            Code</span>
+        <p style="color:k var(--text-muted);position: fixed; top: 30px; right: 20px; font-size: 1.4rem;">Prepared by
+            Prof./AymanMansour</p>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1><i class="fa-solid fa-flask" style="margin-right: 10px;"></i>Answer and explination for guidence model 1
+            </h1>
+
+        </header>
+
+
+
+        <div class="contact-buttons">
+            <a href="tel:01068018005" class="contact-btn phone" title="Call Us: 01068018005">
+                <i class="fa-solid fa-phone"></i>
+            </a>
+            <a href="https://wa.me/201287996430" class="contact-btn whatsapp" title="WhatsApp: 01287996430"
+                target="_blank">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+
+        <div class="document">
+            <div class="content-area">
+                <h1><i class="fa-solid fa-flask" style="color:var(--blue)"></i> CHEMICAL TOOL - First Guiding Model
+                    (Chemistry 2026)</h1>
+
+                <div class="current-question-indicator">
+                    Question <span id="current-q">1</span> of <span id="total-q">46</span>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        1- An element from the first transition series, one of its compounds is used in dyes.<br>
+                        - Which of the following choices represents the electronic structure of this element's ion in
+                        this
+                        compound?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) [<sub>18</sub>Ar] 4s<sup>1</sup> 3d<sup>5</sup></div>
+                        <div class="choice-option">(b) [<sub>18</sub>Ar] 3d<sup>3</sup></div>
+                        <div class="choice-option">(c) [<sub>18</sub>Ar] 4s<sup>2</sup> 3d<sup>3</sup></div>
+                        <div class="choice-option">(d) [<sub>18</sub>Ar] 3d<sup>2</sup></div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) [<sub>18</sub>Ar] 3d<sup>3</sup></span>
+                        <span class="exp-title">Explanation:</span>
+                        Chromium (Cr) forms Chromium (III) oxide (Cr<sub>2</sub>O<sub>3</sub>), which is famously used
+                        as a
+                        green dye in paints. The neutral Chromium atom has an anomalous configuration [Ar]
+                        4s<sup>1</sup>
+                        3d<sup>5</sup>. In the Cr<sub>2</sub>O<sub>3</sub> compound, its oxidation state is +3. Removing
+                        3
+                        electrons (one from 4s and two from 3d) leaves the Cr<sup>3+</sup> ion with a configuration of
+                        [Ar]
+                        3d<sup>3</sup>.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        2- Which of the following expresses the electronic distribution of a non-transition element ion?
+                    </div>
+                    <div class="c grid-2">
+                        <div class="choice-option">(a) X<sup>3+</sup>: [Ne] 3s<sup>2</sup>, 3p<sup>6</sup></div>
+                        <div class="choice-option">(b) Y<sup>2+</sup>: [Ar] 3d<sup>6</sup></div>
+                        <div class="choice-option">(c) Z<sup>2+</sup>: [Ne] 3s<sup>2</sup>, 3p<sup>6</sup></div>
+                        <div class="choice-option">(d) W<sup>3+</sup>: [Kr] 4d<sup>7</sup></div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) Z<sup>2+</sup>: [Ne] 3s<sup>2</sup>, 3p<sup>6</sup></span>
+                        <span class="exp-title">Explanation:</span>
+                        Let's trace back each ion to its neutral atom by adding the lost electrons back:
+                        (a) X<sup>3+</sup> is [Ar], so X is [Ar] 4s<sup>2</sup> 3d<sup>1</sup> (Scandium - transition).
+                        (b) Y<sup>2+</sup> is [Ar] 3d<sup>6</sup>, so Y is [Ar] 4s<sup>2</sup> 3d<sup>6</sup> (Iron -
+                        transition).
+                        (c) Z<sup>2+</sup> is [Ar], so Z is [Ar] 4s<sup>2</sup> (Calcium - representative,
+                        non-transition).
+                        (d) W<sup>3+</sup> is [Kr] 4d<sup>7</sup>, so W is [Kr] 5s<sup>2</sup> 4d<sup>8</sup>
+                        transition).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        3- Four test tubes X, Y, Z, and W, each contain a salt solution as shown in the following table:
+                        <table>
+                            <tr>
+                                <th>W</th>
+                                <th>Z</th>
+                                <th>Y</th>
+                                <th>X</th>
+                            </tr>
+                            <tr>
+                                <td>V(NO<sub>3</sub>)<sub>5</sub></td>
+                                <td>Ti(NO<sub>3</sub>)<sub>3</sub></td>
+                                <td>Fe(NO<sub>3</sub>)<sub>3</sub></td>
+                                <td>Mn(NO<sub>3</sub>)<sub>2</sub></td>
+                            </tr>
+                        </table>
+                        - Which of these tubes should be covered in order to not be change the composition of the
+                        solution
+                        inside it?
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) X</div>
+                        <div class="choice-option">(b) Y</div>
+                        <div class="choice-option">(C) Z</div>
+                        <div class="choice-option">(d) W</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (C) Z</span>
+                        <span class="exp-title">Explanation:</span>
+                        A solution must be covered if its ion is easily oxidized by the oxygen in the air.
+                        V<sup>5+</sup> in
+                        tube W has a highly stable d<sup>0</sup> configuration. Fe<sup>3+</sup> in tube Y has a stable
+                        d<sup>5</sup> half-filled shell. Mn<sup>2+</sup> in tube X also has a highly stable
+                        d<sup>5</sup>
+                        shell. However, Ti<sup>3+</sup> in tube Z has a d<sup>1</sup> configuration. It is highly
+                        unstable
+                        and will easily and rapidly oxidize in air to the more stable Ti<sup>4+</sup> (d<sup>0</sup>).
+                        Therefore, tube Z must be tightly covered.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        4- Two consecutive transition elements (X) and (Y), from the first transition series contain the
+                        same number of electrons in the (3d) subshell.<br>
+                        -Which of the following is true?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) The effective nuclear charge of element (X) is greater than the
+                            effective nuclear Charge of element (Y)</div>
+                        <div class="choice-option">(b) The radius of element (X) is smaller than the radius of element
+                            (Y)
+                        </div>
+                        <div class="choice-option">(c) The radius of element (X) is equal to the radius of element (Y)
+                        </div>
+                        <div class="choice-option">(d) The repulsion between the (3d) electrons of element (X) is less
+                            than
+                            the repulsion Between the (3d) electrons of element (Y)</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) The radius of element (X) is equal to the radius of element
+                            (Y)</span>
+                        <span class="exp-title">Explanation:</span>
+                        The consecutive elements that share the same number of 3d electrons in the first series are
+                        Chromium
+                        (Cr: 4s<sup>1</sup> 3d<sup>5</sup>) and Manganese (Mn: 4s<sup>2</sup> 3d<sup>5</sup>), or Copper
+                        (Cu: 4s<sup>1</sup> 3d<sup>10</sup>) and Zinc (Zn: 4s<sup>2</sup> 3d<sup>10</sup>). A defining
+                        characteristic of the first transition series is the relative constancy of the atomic radii from
+                        Chromium to Copper due to the balancing effect of increased nuclear charge and the shielding
+                        effect
+                        of the added 3d electrons. Thus, their atomic radii are approximately equal.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        5- Which of the following describes the change that occurs to siderite ore when Heated in air?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Its mass increases and percentage of iron increases in it.</div>
+                        <div class="choice-option">(b) Its mass decreases and percentage of iron increases in it.</div>
+                        <div class="choice-option">(c) Its mass decreases and percentage of iron decreases in it.</div>
+                        <div class="choice-option">(d) Its mass increases and percentage of iron decreases in it.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Its mass decreases and percentage of iron increases in
+                            it.</span>
+                        <span class="exp-title">Explanation:</span>
+                        Heating siderite (FeCO<sub>3</sub>) in air causes it to decompose into FeO and CO<sub>2</sub>
+                        gas,
+                        followed by oxidation of FeO to Fe<sub>2</sub>O<sub>3</sub>. The overall reaction is:
+                        4FeCO<sub>3</sub> + O<sub>2</sub> &rarr; 2Fe<sub>2</sub>O<sub>3</sub> + 4CO<sub>2</sub>. Because
+                        heavy CO<sub>2</sub> gas escapes, the overall mass of the solid ore decreases. Concurrently, the
+                        mass percentage of iron jumps from ~48.2% in FeCO<sub>3</sub> to ~70% in
+                        Fe<sub>2</sub>O<sub>3</sub>.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        6- Which of the following expresses the effect of the gas produced by (the reaction of dilute
+                        hydrochloric acid with sodium sulphite)?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) It turns a paper wet with potassium dichromate solution to green.
+                        </div>
+                        <div class="choice-option">(b) It does not remove the color of acidified potassium permanganate
+                            solution.</div>
+                        <div class="choice-option">(c) It turns a paper wet with lead acetate solution to black.</div>
+                        <div class="choice-option">(d) It turns a paper wet with starch to yellow.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) It turns a paper wet with potassium dichromate solution to
+                            green.</span>
+                        <span class="exp-title">Explanation:</span>
+                        The reaction between dilute HCl and sodium sulphite (Na<sub>2</sub>SO<sub>3</sub>) releases
+                        sulphur
+                        dioxide gas (SO<sub>2</sub>). SO<sub>2</sub> is a strong reducing agent that reduces the orange
+                        dichromate ion (Cr<sub>2</sub>O<sub>7</sub><sup>2&minus;</sup>) to the green chromium (III) ion
+                        (Cr<sup>3+</sup>).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        7- Which of the following reactions produces a precipitate?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Hydrogen sulphide gas with lead (II) acetate solution</div>
+                        <div class="choice-option">(b) Sodium thiosulphate solution with brown iodine solution</div>
+                        <div class="choice-option">(c) Sulphur dioxide gas with acidified potassium dichromate solution
+                        </div>
+                        <div class="choice-option">(d) Sodium nitrite solution with acidified potassium permanganate
+                            solution</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) Hydrogen sulphide gas with lead (II) acetate solution</span>
+                        <span class="exp-title">Explanation:</span>
+                        Reacting H<sub>2</sub>S gas with lead (II) acetate produces Lead (II) sulphide (PbS), which
+                        forms as
+                        a distinct black precipitate. The other three reactions involve redox processes that produce
+                        soluble
+                        aqueous products with no precipitates (they only feature color changes).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        8- When hot concentrated sulphuric acid reacts with salt (X), a gas that difficult to be
+                        oxidized by
+                        acid is released, and when the same acid reacts with salt (Y), a gas that is partially oxidized
+                        is
+                        released. Salts (X) and (Y) are:
+                        <table>
+                            <tr>
+                                <th></th>
+                                <th>X</th>
+                                <th>Y</th>
+                            </tr>
+                            <tr>
+                                <td>A</td>
+                                <td>Sodium chloride</td>
+                                <td>Sodium iodide</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Sodium bromide</td>
+                                <td>Sodium iodide</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Sodium nitrate</td>
+                                <td>Sodium carbonate</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>Sodium chloride</td>
+                                <td>Sodium sulphate</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) X: Sodium chloride, Y: Sodium iodide</div>
+                        <div class="choice-option">(b) X: Sodium bromide, Y: Sodium iodide</div>
+                        <div class="choice-option">(c) X: Sodium nitrate, Y: Sodium carbonate </div>
+                        <div class="choice-option">(d) X: Sodium chloride, Y: Sodium sulphate</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (A) X: Sodium chloride, Y: Sodium iodide</span>
+                        <span class="exp-title">Explanation:</span>
+                        Concentrated hot H<sub>2</sub>SO<sub>4</sub> reacts with NaCl (salt X) to release HCl gas, which
+                        is
+                        very stable and difficult for the acid to oxidize further. When reacting with NaI or NaBr (salt
+                        Y),
+                        it releases HI or HBr gases. HI is easily/partially oxidized by the hot
+                        H<sub>2</sub>SO<sub>4</sub>
+                        to release violet iodine vapors.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        9- When barium chloride solution is added to salt solution (X), a white precipitate forms that
+                        dissolves in dilute acids, and when lead II acetate solution is added to salt solution (Y), a
+                        white
+                        precipitate forms.<br>
+                        - Which of the following expresses the anions of salts (X) and (Y)?
+                        <table>
+                            <tr>
+                                <th></th>
+                                <th>Anion of salt (X)</th>
+                                <th>Anion of salt (Y)</th>
+                            </tr>
+                            <tr>
+                                <td>A</td>
+                                <td>Phosphate</td>
+                                <td>Sulphate</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Phosphate</td>
+                                <td>Sulphide</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Sulphate</td>
+                                <td>Phosphate</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>Chloride</td>
+                                <td>Sulphate</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) X: Phosphate, Y: Sulphate</div>
+                        <div class="choice-option">(b) X: Phosphate, Y: Sulphide</div>
+                        <div class="choice-option">(C) X: Sulphate, Y: Phosphate</div>
+                        <div class="choice-option">(d)X: Chloride, Y: Sulphate</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (A) Anion X: Phosphate, Anion Y: Sulphate</span>
+                        <span class="exp-title">Explanation:</span>
+                        Barium chloride precipitates both phosphates and sulphates as white solids. However, Barium
+                        phosphate dissolves in dilute HCl, whereas Barium sulphate does not. Thus, X is Phosphate. Lead
+                        (II)
+                        acetate produces a white precipitate of Lead sulphate (PbSO<sub>4</sub>) when added to
+                        sulphates.
+                        (Lead sulphide would be black). Thus, Y is Sulphate.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        10- From the following diagram:
+                        <div class="diagram-box">
+                            <div>White ppt.</div>
+                            <div class="arrow-container"><span class="arrow">&larr;</span><span>Diluted
+                                    sulphuric<br>acid</span></div>
+                            <div class="box">X<sup>2+</sup></div>
+                            <div class="arrow-container"><span class="arrow">&rarr;</span><span>Sodium
+                                    carbonate<br>solution</span></div>
+                            <div>White ppt.</div>
+                        </div>
+                        -Which of the following represents cation (X<sup>2+</sup>):-
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) Ca<sup>2+</sup></div>
+                        <div class="choice-option">(b) Cu<sup>2+</sup></div>
+                        <div class="choice-option">(C) Mg<sup>2+</sup></div>
+                        <div class="choice-option">(d) Fe<sup>2+</sup></div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) Ca<sup>2+</sup></span>
+                        <span class="exp-title">Explanation:</span>
+                        Calcium (Ca<sup>2+</sup>) reacts with dilute sulfuric acid to form Calcium sulfate
+                        (CaSO<sub>4</sub>), which is a white precipitate. It also reacts with sodium carbonate to form
+                        Calcium carbonate (CaCO<sub>3</sub>), another white precipitate. Mg<sup>2+</sup>,
+                        Fe<sup>2+</sup>,
+                        and Cu<sup>2+</sup> do not form precipitates with dilute sulfuric acid (their sulfates are
+                        soluble).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        11- From the following graphs:
+                        <div style="display: flex; justify-content: center; gap: 40px; margin: 15px 0;">
+                            <div style="text-align: center;">
+                                <svg width="400" height="180" viewBox="0 0 400 180" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <text x="80" y="20" fill="#38bdf8" font-size="14" font-weight="bold"
+                                        font-family="sans-serif" text-anchor="middle">Graph (Y)</text>
+                                    <path d="M30 140 L130 140" stroke="#94a3b8" stroke-width="2" />
+                                    <path d="M30 140 L30 40" stroke="#94a3b8" stroke-width="2" />
+                                    <text x="140" y="145" fill="#94a3b8" font-size="12"
+                                        font-family="sans-serif">Time</text>
+                                    <path d="M30 50 Q60 100 120 100" stroke="#ef4444" stroke-width="2" fill="none" />
+                                    <path d="M30 140 Q50 120 120 120" stroke="#10b981" stroke-width="2" fill="none" />
+
+                                    <text x="280" y="20" fill="#38bdf8" font-size="14" font-weight="bold"
+                                        font-family="sans-serif" text-anchor="middle">Graph (X)</text>
+                                    <path d="M230 140 L330 140" stroke="#94a3b8" stroke-width="2" />
+                                    <path d="M230 140 L230 40" stroke="#94a3b8" stroke-width="2" />
+                                    <text x="340" y="145" fill="#94a3b8" font-size="12"
+                                        font-family="sans-serif">Time</text>
+                                    <path d="M230 50 Q260 120 320 120" stroke="#ef4444" stroke-width="2" fill="none" />
+                                    <path d="M230 140 Q250 80 320 80" stroke="#10b981" stroke-width="2" fill="none" />
+                                </svg>
+
+                            </div>
+                        </div>
+                        Which of the following statements is correct?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Graph(X): Kc=1 , the backward reaction is the predominant</div>
+                        <div class="choice-option">(b) Graph(Y): Kc=1 , the forward reaction is the predominant</div>
+                        <div class="choice-option">(C) Graph(X): Kc&gt;1 , the forward reaction is the predominant</div>
+                        <div class="choice-option">(d) Graph(Y): Kc&gt;1 , the backward reaction is the predominant
+                        </div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (C) Graph(X): Kc&gt;1 , the forward reaction is the
+                            predominant</span>
+                        <span class="exp-title">Explanation:</span>
+                        In Graph (X), the product curve (rising from zero) ends up at a higher concentration than the
+                        reactant curve (dropping from the top). Since [Products] &gt; [Reactants] at equilibrium, Kc
+                        &gt; 1,
+                        meaning the forward reaction is predominant. In Graph (Y), the reactants remain higher than the
+                        products, yielding Kc &lt; 1.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        12- In the following equilibrium reaction:<br>
+                        <center>Ca(OH)<sub>2(s)</sub> &rightleftharpoons; CaO<sub>(s)</sub> +
+                            H<sub>2</sub>O<sub>(v)</sub>
+                        </center><br>
+                        Which of the following changes leads to an increase in the mass of calcium oxide?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Reducing the mass of calcium oxide by half</div>
+                        <div class="choice-option">(b) Withdrawal 10 mL of water vapor</div>
+                        <div class="choice-option">(c) Doubling the mass of calcium hydroxide</div>
+                        <div class="choice-option">(d) Adding 10 mL of water vapor</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Withdrawal 10 mL of water vapor</span>
+                        <span class="exp-title">Explanation:</span>
+                        According to Le Chatelier's Principle, withdrawing a product (water vapor) causes the
+                        equilibrium to
+                        shift forward (to the right) to compensate for the loss. This forward shift generates more
+                        products,
+                        leading to an increase in the mass of solid CaO. Changing the amounts of solids (a and c) does
+                        not
+                        shift the equilibrium position.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        13- 50 mL of a 0.2 M ammonium hydroxide (NH<sub>4</sub>OH) solution was diluted by adding 450 mL
+                        of
+                        distilled water. What is the dissociation degree (&alpha;) of the solution after dilution?<br>
+                        <center>(Ammonia ionization constant K<sub>b</sub> = 1.8 &times; 10<sup>&minus;5</sup>)</center>
+                    </div>
+                    <div class="c grid-2">
+                        <div class="choice-option">(a) 0.03</div>
+                        <div class="choice-option">(b) 0.0095</div>
+                        <div class="choice-option">(c) 0.2</div>
+                        <div class="choice-option">(d) 0.0009</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) 0.03</span>
+                        <span class="exp-title">Explanation:</span>
+                        First, find the new concentration after dilution. Initial volume V<sub>1</sub> = 50 mL, initial
+                        molarity M<sub>1</sub> = 0.2 M. Final volume V<sub>2</sub> = 50 + 450 = 500 mL. Using
+                        M<sub>1</sub>V<sub>1</sub> = M<sub>2</sub>V<sub>2</sub>, M<sub>2</sub> = (0.2 &times; 50) / 500
+                        =
+                        0.02 M. <br>
+                        Using Ostwald's dilution law: &alpha; = &radic;(K<sub>b</sub> / C) = &radic;(1.8 &times;
+                        10<sup>&minus;5</sup> / 0.02) = &radic;(9 &times; 10<sup>&minus;4</sup>) = 0.03.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        14- Test tubes (A) and (B) each contain a saturated calcium carbonate solution.<br>
+                        <center>CaCO<sub>3(s)</sub> &rightleftharpoons; Ca<sup>2+</sup><sub>(aq)</sub> +
+                            CO<sub>3</sub><sup>2&minus;</sup><sub>(aq)</sub></center><br>
+                        - In tube (A), a few drops of hydrochloric acid were added.<br>
+                        - In tube (B), a few drops of calcium chloride solution were added.<br>
+                        - Which of the following is true?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) The amount of precipitate gradually increases in (A) and
+                            gradually
+                            decreases in (B)</div>
+                        <div class="choice-option">(b) The amount of precipitate gradually decreases in (A) and
+                            gradually
+                            increases in (B)</div>
+                        <div class="choice-option">(c) The amount of precipitate gradually increases in both tubes.
+                        </div>
+                        <div class="choice-option">(d) The amount of precipitate gradually decreases in both tubes.
+                        </div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) The amount of precipitate gradually decreases in (A) and
+                            gradually increases in (B)</span>
+                        <span class="exp-title">Explanation:</span>
+                        In tube A, the added H<sup>+</sup> from HCl reacts with carbonate
+                        (CO<sub>3</sub><sup>2&minus;</sup>) to form CO<sub>2</sub> gas and H<sub>2</sub>O. Removing the
+                        product CO<sub>3</sub><sup>2&minus;</sup> shifts the equilibrium right, causing the
+                        CaCO<sub>3</sub>
+                        solid to dissolve (precipitate decreases). In tube B, adding CaCl<sub>2</sub> increases the
+                        concentration of Ca<sup>2+</sup>. By the common ion effect (Le Chatelier), this shifts the
+                        equilibrium to the left, forming more solid (precipitate increases).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        15- Drops of solution (X) were added to a quantity of distilled water, and a Decrease in the POH
+                        value of the water was observed.<br>
+                        - Which of the following describes solution (X)?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Base pOH has a value of 8</div>
+                        <div class="choice-option">(b) Acid pOH has a value of 5</div>
+                        <div class="choice-option">(c) Base pH has a value of 8</div>
+                        <div class="choice-option">(d) Acid pH has a value of 5</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) Base pH has a value of 8</span>
+                        <span class="exp-title">Explanation:</span>
+                        Distilled water has a pOH of 7. A decrease in pOH means the solution became more basic (since
+                        [OH<sup>&minus;</sup>] increases). Therefore, solution X must be a base. Let's look at the basic
+                        choices: A base with pH=8 is slightly basic (and its pOH is 6). Adding it to water would lower
+                        the
+                        overall mixture's pOH below 7. (Choice 'a' says Base pOH=8, which would mean pH=6, which is
+                        acidic,
+                        creating a contradiction).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        16- In the following balanced reaction:<br>
+                        <center>C<sub>(S)</sub> + CO<sub>2(g)</sub> &rarr; 2CO<sub>(g)</sub></center><br>
+                        -If the total pressure of this system at equilibrium is 40 atm and the partial pressure of
+                        carbon
+                        monoxide is 31.6 atm, then the value of Kp for this system is equal to:
+                    </div>
+                    <div class="c grid-2">
+                        <div class="choice-option">(a) 8.487</div>
+                        <div class="choice-option">(b) 3.760</div>
+                        <div class="choice-option">(c) 118.87</div>
+                        <div class="choice-option">(d) 131.98</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) 118.87</span>
+                        <span class="exp-title">Explanation:</span>
+                        The total pressure involves only the gases. P<sub>Total</sub> = P(CO<sub>2</sub>) + P(CO). Since
+                        P(CO) = 31.6 atm, then P(CO<sub>2</sub>) = 40 - 31.6 = 8.4 atm. (Carbon is solid and ignored).
+                        <br>
+                        Kp = (P(CO))<sup>2</sup> / (P(CO<sub>2</sub>)) = (31.6)<sup>2</sup> / 8.4 = 998.56 / 8.4
+                        &approx;
+                        118.876.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        17- A few drops of Na<sub>2</sub>S solution were added to the cathode half-cell in a Daniel
+                        cell.<br>
+                        - Which of the following is correct?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) The (emf) of the cell increases.</div>
+                        <div class="choice-option">(b) The cell consumption time decreases.</div>
+                        <div class="choice-option">(c) The concentration of Cu<sup>2+</sup> cations increases.</div>
+                        <div class="choice-option">(d) The current reverses and the (emf) value decreases.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) The cell consumption time decreases.</span>
+                        <span class="exp-title">Explanation:</span>
+                        The cathode half-cell of a Daniel cell contains Cu<sup>2+</sup> ions. Adding Na<sub>2</sub>S
+                        causes
+                        the highly insoluble Copper(II) sulphide (CuS) to precipitate out. This drastically drops the
+                        [Cu<sup>2+</sup>] concentration, suppressing the cell's forward reaction and dropping its EMF.
+                        Since
+                        the active ions required to generate current are removed chemically rather than electrically,
+                        the
+                        useful operational time (cell consumption time) of the battery decreases significantly.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        18- In the following reaction:<br>
+                        <center>5Cl<sup>&minus;</sup> + 8H<sup>+</sup> + MnO<sub>4</sub><sup>&minus;</sup> &rarr;
+                            <sup>5</sup>&frasl;<sub>2</sub> Cl<sub>2</sub> + 4 H<sub>2</sub>O + Mn<sup>2+</sup>
+                        </center>
+                        <center>(Cl<sub>2</sub> / 2Cl<sup>&minus;</sup> = +1.36 V, Mn<sup>2+</sup> / Mn<sup>7+</sup> =
+                            -1.52
+                            V)</center><br>
+                        -Which of the following represents the type and value of (emf) of the reaction?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Spontaneous, emf = + 0.16</div>
+                        <div class="choice-option">(b) Non-spontaneous, emf = - 2.88 V</div>
+                        <div class="choice-option">(c) Spontaneous and, emf = - 0.16 V</div>
+                        <div class="choice-option">(d) Non-spontaneous, emf = + 2.88 V</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) Spontaneous, emf = + 0.16</span>
+                        <span class="exp-title">Explanation:</span>
+                        Let's interpret the standard potentials given: The Cl<sub>2</sub>/Cl<sup>&minus;</sup> reduction
+                        potential is +1.36 V, so its oxidation potential is -1.36 V. The Mn<sup>2+</sup>/Mn<sup>7+</sup>
+                        potential is given as an oxidation potential of -1.52 V, which implies the reduction potential
+                        of
+                        MnO<sub>4</sub><sup>&minus;</sup> is +1.52 V.<br>
+                        E<sub>cell</sub> = E<sub>ox(anode)</sub> + E<sub>red(cathode)</sub> = -1.36 V
+                        (Cl<sup>&minus;</sup>
+                        oxidation) + 1.52 V (MnO<sub>4</sub><sup>&minus;</sup> reduction) = +0.16 V. Since it's
+                        positive,
+                        the reaction is spontaneous.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        19- The following table shows the components of two galvanic cells and the standard potential
+                        value
+                        for each:
+                        <table>
+                            <tr>
+                                <th>Cell number</th>
+                                <th>Anode</th>
+                                <th>Cathode</th>
+                                <th>emf</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>X</td>
+                                <td>Ag</td>
+                                <td>0.80 V</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Y</td>
+                                <td>Ag</td>
+                                <td>1.56V</td>
+                            </tr>
+                        </table>
+                        - If a galvanic cell with electrodes (X, Y) is formed, the (emf) of the cell is equal to:
+                    </div>
+                    <div class="c grid-2">
+                        <div class="choice-option">(a) +2.36 V</div>
+                        <div class="choice-option">(b) - 2.36 V</div>
+                        <div class="choice-option">(C) +0.76 V</div>
+                        <div class="choice-option">(d) - 0.76 V</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (C) +0.76 V</span>
+                        <span class="exp-title">Explanation:</span>
+                        Using E<sub>cell</sub> = E<sub>ox(Anode)</sub> + E<sub>red(Cathode)</sub>. Let's assign
+                        E<sub>red(Ag)</sub> = x.<br>
+                        For Cell 1: E<sub>ox(X)</sub> + E<sub>red(Ag)</sub> = 0.80 V.<br>
+                        For Cell 2: E<sub>ox(Y)</sub> + E<sub>red(Ag)</sub> = 1.56 V.<br>
+                        Subtracting the two equations gives: E<sub>ox(Y)</sub> - E<sub>ox(X)</sub> = 1.56 - 0.80 = 0.76
+                        V.<br>
+                        Since Y has a higher oxidation potential, it will act as the anode, and X will act as the
+                        cathode.
+                        EMF = E<sub>ox(Y)</sub> + E<sub>red(X)</sub> = 0.76 V.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        20- The following table shows standard reduction potential of three metals (A, B, C)
+                        <table>
+                            <tr>
+                                <th>A</th>
+                                <th>B</th>
+                                <th>C</th>
+                            </tr>
+                            <tr>
+                                <td>-0.44</td>
+                                <td>+0.34 V</td>
+                                <td>+0.8</td>
+                            </tr>
+                        </table>
+                        -When metals (A) and (B) are each covered with a layer of metal (C), which of the following best
+                        describes the type of protection?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Anodic protection for (A), and cathodic protection for (B)</div>
+                        <div class="choice-option">(b) Cathodic protection for (A), and cathodic protection for (B)
+                        </div>
+                        <div class="choice-option">(c) Anodic protection for (A), and anodic protection for (B)</div>
+                        <div class="choice-option">(d) Cathodic protection for (A), and anodic protection for (B)</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Cathodic protection for (A), and cathodic protection for
+                            (B)</span>
+                        <span class="exp-title">Explanation:</span>
+                        The higher the reduction potential, the less active the metal. Thus, the activity series is A
+                        (most
+                        active) &gt; B &gt; C (least active). Because C is less active than both A and B, covering
+                        either
+                        metal with C means the underlying metal is the anode (more active). This type of protective
+                        coating
+                        (where the coating is less active) is called cathodic protection.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        21- When bauxite ore is analyzed electrically, which of the following statements describe the
+                        result
+                        of the reaction?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Hydrogen gas evolves at cathode and oxygen gas evolves at anode.
+                        </div>
+                        <div class="choice-option">(b) Aluminum metal is deposited at cathode and oxygen gas is formed
+                            at
+                            the anode.</div>
+                        <div class="choice-option">(c) Aluminum metal is deposited at cathode and hydrogen gas is formed
+                            at
+                            anode.</div>
+                        <div class="choice-option">(d) Oxygen gas evolves at cathode and hydrogen gas rises at anode.
+                        </div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Aluminum metal is deposited at cathode and oxygen gas is
+                            formed
+                            at the anode.</span>
+                        <span class="exp-title">Explanation:</span>
+                        Electrolysis of molten Bauxite (Al<sub>2</sub>O<sub>3</sub> dissolved in molten cryolite)
+                        involves
+                        the reduction of Al<sup>3+</sup> ions to molten Aluminum metal at the cathode (negative
+                        electrode),
+                        and the oxidation of O<sup>2&minus;</sup> ions to Oxygen gas (O<sub>2</sub>) at the carbon anode
+                        (positive electrode).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        22- Three metals (A, B, and C), are ordered according to their reducing agent Strength as
+                        follows:
+                        [A &gt; B &gt; C]<br>
+                        -When purifying metal (B), which contains impurities of (A) and (C), using an electrolytic cell
+                        containing an electrolyte solution of (B<sup>2+</sup>) ions (under suitable conditions)
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Metal (C) is oxidized during the purification process.</div>
+                        <div class="choice-option">(b) Metal (C) is reduced during the purification process.</div>
+                        <div class="choice-option">(c) Metal (A) is oxidized at the anode and (C) is deposited at the
+                            anode.
+                        </div>
+                        <div class="choice-option">(d) Metal (A) is reduced at the anode and (C) is deposited at the
+                            cathode.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) Metal (A) is oxidized at the anode and (C) is deposited at
+                            the
+                            anode.</span>
+                        <span class="exp-title">Explanation:</span>
+                        In the electrolytic purification of metal B, the impure block is the anode. Because A is more
+                        active
+                        than B, both A and B will oxidize and dissolve into the solution as ions. Because C is less
+                        active
+                        than B, the applied voltage is insufficient to oxidize it. Thus, C remains unreacted and simply
+                        falls off, depositing at the bottom of the cell below the anode (as "anode mud").
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        23- (A, B, C) Three hydrocarbons:<br>
+                        (A): gas and one of the components of oven gas by smaller ratio in hot countries.<br>
+                        (B): Contains the same number of carbon atoms as compound (A), but its Molecular formula is two
+                        atoms less than that of compound (A).<br>
+                        (C): Unsaturated, its molecular formula two less hydrogen atoms than Compound (B).<br>
+                        -Which of the following represents the products of complete hydrogenation in the presence of a
+                        catalyst for each of the above compounds?
+                        <table>
+                            <tr>
+                                <th></th>
+                                <th>Product of hydrogenation (A)</th>
+                                <th>Product of hydrogenation (B)</th>
+                                <th>Product of hydrogenation (C)</th>
+                            </tr>
+                            <tr>
+                                <td>A</td>
+                                <td>Propane</td>
+                                <td>Propane</td>
+                                <td>Propane</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Butane</td>
+                                <td>Propane</td>
+                                <td>Propene</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Butane</td>
+                                <td>Cyclopropane</td>
+                                <td>Propyne</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>Propane</td>
+                                <td>Propene</td>
+                                <td>Propyne</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Product of hydrogenation (A) is Propane</div>
+                        <div class="choice-option">(b) Product of hydrogenation (B) is Propane</div>
+                        <div class="choice-option">(c) Product of hydrogenation (C) is Propene.</div>
+                        <div class="choice-option">(d) Product of hydrogenation (C) is Propyne.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (A) Propane | Propane | Propane</span>
+                        <span class="exp-title">Explanation:</span>
+                        (A) is Propane (C<sub>3</sub>H<sub>8</sub>), which is a component of LPG and is kept in a
+                        smaller
+                        ratio in hot countries to manage cylinder pressure. (B) is Propene or Cyclopropane
+                        (C<sub>3</sub>H<sub>6</sub>), having 2 fewer H atoms. (C) is Propyne
+                        (C<sub>3</sub>H<sub>4</sub>),
+                        having 2 fewer H atoms than B. Completely hydrogenating any 3-carbon hydrocarbon saturates it to
+                        yield the corresponding alkane, which is Propane in all three cases.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        24- Three organic compounds (A), (B), and (C), each containing two carbon atoms<br>
+                        Compound (A): saturated hydrocarbon, can be liquefied by pressure and cooling<br>
+                        Compound (B): characterized by the presence of one hydrogen bond between Each two molecules<br>
+                        Compound (C): characterized by two hydrogen bonds between each pair of Molecules<br>
+                        - Which of the following represents the correct order of chemical processes required to obtain a
+                        saturated hydrocarbon with a boiling point lower than that of compound (A)?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Halogenation of (A) - alkaline hydrolysis &ndash;
+                            neutralization-dry
+                            distillation</div>
+                        <div class="choice-option">(b) Complete oxidation of (B)- addition of sodium hydroxide- dry
+                            distillation</div>
+                        <div class="choice-option">(c) Reduction of (C) - dehydration - catalytic hydrogenation</div>
+                        <div class="choice-option">(d) Reaction of (B) and (C) - hydrolysis in an acidic medium -
+                            oxidation
+                            of the product</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Complete oxidation of (B)- addition of sodium hydroxide- dry
+                            distillation</span>
+                        <span class="exp-title">Explanation:</span>
+                        Compound A is Ethane (C<sub>2</sub>H<sub>6</sub>). A saturated hydrocarbon with a lower boiling
+                        point than ethane must be Methane (CH<sub>4</sub>). Compound B is Ethanol (forms 1 H-bond). To
+                        get
+                        Methane from Ethanol: Complete oxidation of Ethanol (B) yields Acetic acid. Adding NaOH
+                        (neutralization) yields Sodium acetate. Finally, dry distillation of Sodium acetate with soda
+                        lime
+                        yields Methane gas.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        25- Monobasic carboxylic acid (containing a number of carboxyl groups equal to the number of
+                        carbon
+                        atoms) added to alcohol has a freezing point of -110.5&deg;C.<br>
+                        -Which of the following expresses the number of isomers of the resulting compound that have the
+                        same
+                        functional group group?
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) 0</div>
+                        <div class="choice-option">(b) 1</div>
+                        <div class="choice-option">(c) 2</div>
+                        <div class="choice-option">(d) 3</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) 1</span>
+                        <span class="exp-title">Explanation:</span>
+                        An acid where the number of carbons = number of carboxyls is Formic (Methanoic) acid (HCOOH).
+                        The
+                        alcohol reacting with it, with a freezing point historically noted in texts around -110&deg;C to
+                        -114&deg;C, is Ethanol (C<sub>2</sub>H<sub>5</sub>OH). Esterification gives Ethyl formate
+                        (HCOOC<sub>2</sub>H<sub>5</sub>, total formula C<sub>3</sub>H<sub>6</sub>O<sub>2</sub>). Isomers
+                        of
+                        this ester with the same functional group (i.e., other esters) is just one: Methyl acetate
+                        (CH<sub>3</sub>COOCH<sub>3</sub>).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        26- From the following diagram:
+                        <div class="diagram-box" style="gap:5px; flex-wrap:wrap;">
+                            <div class="box">(A)</div>
+                            <div class="arrow-container"><span class="arrow">&rarr;</span><span>(NaOH)</span></div>
+                            <div class="box">(B)</div>
+                            <div class="arrow-container"><span class="arrow">&rarr;</span><span>(C)</span></div>
+                            <div class="box">(D)<br>C<sub>n</sub>H<sub>2n+2</sub>O</div>
+                            <div class="arrow-container"><span
+                                    class="arrow">&rarr;</span><span>Complete<br>oxidation</span>
+                            </div>
+                            <div class="box">(E)<br>C<sub>n</sub>H<sub>2n</sub>O<sub>2</sub></div>
+                        </div>
+                        If you know that organic acid (A) causes muscle contraction when its level in the body
+                        increases.<br>
+                        -Which of the following expresses the correct name for each of (D) and (E) and the name of the
+                        process (C)?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(A) D: Propanol, E: Propanoic acid , C: Dry distillation</div>
+                        <div class="choice-option">(b) D: ethanol , E: Ethanoic acid , C: dehydration</div>
+                        <div class="choice-option">(c) D: ethanol , E: Ethanoic acid , C: dry distillation</div>
+                        <div class="choice-option">(d) D: propanol, E: propanoic acid, C: dehydration</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) D: ethanol , E: Ethanoic acid , C: dry distillation</span>
+                        <span class="exp-title">Explanation:</span>
+                        Acid (A) is Lactic acid (CH<sub>3</sub>CH(OH)COOH). Reacting it with NaOH gives Sodium lactate
+                        (B).
+                        Dry distillation (C) of sodium lactate cleaves the carboxylate group, converting the rest of the
+                        molecule into Ethanol (D: C<sub>2</sub>H<sub>6</sub>O). Complete oxidation of ethanol yields
+                        Ethanoic/Acetic acid (E: C<sub>2</sub>H<sub>4</sub>O<sub>2</sub>).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        27- Which of the following expresses the correct order of chemical processes necessary to obtain
+                        an
+                        organic compound used as antifreeze from cane sugar?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Hydrolysis &ndash; alcoholic fermentation &ndash;
+                            dehydration/140&deg;C &ndash; addition of Hydrogen peroxide</div>
+                        <div class="choice-option">(b) Alcoholic fermentation &ndash; hydrolysis &ndash;
+                            dehydration/180&deg;C &ndash; Bayer reaction</div>
+                        <div class="choice-option">(c) Hydrolysis &ndash; alcoholic fermentation &ndash;
+                            dehydration/180&deg;C &ndash; addition of Hydrogen peroxide</div>
+                        <div class="choice-option">(d) Hydrolysis &ndash; alcoholic fermentation &ndash;
+                            dehydration/80&deg;C &ndash; addition of Hydrogen peroxide</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) Hydrolysis &ndash; alcoholic fermentation &ndash;
+                            dehydration/180&deg;C &ndash; addition of Hydrogen peroxide</span>
+                        <span class="exp-title">Explanation:</span>
+                        Cane sugar (Sucrose) undergoes hydrolysis to form glucose/fructose. Alcoholic fermentation of
+                        glucose produces Ethanol. Dehydrating ethanol with conc. H<sub>2</sub>SO<sub>4</sub> at
+                        180&deg;C
+                        yields Ethene. Finally, oxidizing ethene with hydrogen peroxide (or Bayer's reaction) adds two
+                        -OH
+                        groups, forming Ethylene glycol, which is used as antifreeze.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        28- Three organic acids that do not contain a carboxyl group:<br>
+                        (A): A weak solid acid with a characteristic odor at room temperature<br>
+                        (B): Can be prepared by reacting benzene with a mineral acid by substitution<br>
+                        (C): Used as an antiseptic in treatment of burns<br>
+                        -Which of the following describes the above acids?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Acid (A) can be prepared from acid (B) by complete oxidation in
+                            the
+                            presence Of a dehydrating agent.</div>
+                        <div class="choice-option">(b) Acid (B) can be prepared from acid (A) by adding concentrated
+                            nitric
+                            acid in The presence of sulphuric acid.</div>
+                        <div class="choice-option">(c) Acid (C) can be prepared from acid (B) by adding concentrated
+                            nitric
+                            acid and Sulfuric acid</div>
+                        <div class="choice-option">(d) Acid (B) can be prepared from acid (A) by adding zinc and
+                            heating,
+                            then Adding concentrated sulphuric acid</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (d) Acid (B) can be prepared from acid (A) by adding zinc and
+                            heating, then Adding concentrated sulphuric acid</span>
+                        <span class="exp-title">Explanation:</span>
+                        Acid A is Phenol (carbolic acid). Acid B is Benzenesulfonic acid (benzene +
+                        H<sub>2</sub>SO<sub>4</sub>). Acid C is Picric acid. To prepare B from A: Phenol (A) is reduced
+                        by
+                        heating with Zinc dust to form Benzene. Then, Benzene is sulfonated using concentrated sulfuric
+                        acid
+                        to yield Benzenesulfonic acid (B).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        29- Which of the following compounds burns in an abundance of oxygen to produce 3 mol of water
+                        vapor
+                        and 3 mol of carbon dioxide?
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) Propane</div>
+                        <div class="choice-option">(b) Cyclopropane</div>
+                        <div class="choice-option">(c) Propanol</div>
+                        <div class="choice-option">(d) Propane</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Cyclopropane</span>
+                        <span class="exp-title">Explanation:</span>
+                        The balanced combustion produces 3CO<sub>2</sub> (meaning 3 carbons) and 3H<sub>2</sub>O
+                        (meaning 6
+                        hydrogens). The empirical matching formula is C<sub>3</sub>H<sub>6</sub>. Cyclopropane (and
+                        propene)
+                        fits this formula. Propane is C<sub>3</sub>H<sub>8</sub> (produces 4H<sub>2</sub>O), and
+                        propanol is
+                        C<sub>3</sub>H<sub>8</sub>O (also 4H<sub>2</sub>O).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        30- Which of the following correctly describes the role of sodium hydroxide in preparation of
+                        Paraffins and the role of concentrated sulphuric acid in the preparation of olefins,
+                        respectively?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Removing water from alcohols in the preparation of olefins and
+                            flux
+                            substance In the preparation of Paraffins</div>
+                        <div class="choice-option">(b) Removing the carboxylate group in the preparation of olefins and
+                            removing Water in the preparation of Paraffins</div>
+                        <div class="choice-option">(c) Removing the carboxylate group in the preparation of Paraffins
+                            and
+                            Illuminating water in the preparation of olefins</div>
+                        <div class="choice-option">(d) Absorbing water vapor in the preparation of Paraffins and
+                            neutralizing acid Vapors in the preparation of olefins</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) Removing the carboxylate group in the preparation of
+                            Paraffins
+                            and Illuminating [eliminating] water in the preparation of olefins</span>
+                        <span class="exp-title">Explanation:</span>
+                        In the preparation of paraffins (alkanes) via dry distillation, NaOH reacts to remove the
+                        carboxylate group (-COONa) as Na<sub>2</sub>CO<sub>3</sub>. In the preparation of olefins
+                        (alkenes)
+                        like ethene, concentrated sulfuric acid acts as a strong dehydrating agent, eliminating/removing
+                        water from the alcohol. (Note: "Illuminating" is a recognized translational typo for
+                        "Eliminating").
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        31- Study the following compound:
+                        <div style="text-align: center; margin: 15px 0;">
+                            <svg width="260" height="130" viewBox="0 0 280 130" stroke="#e11d48" fill="none"
+                                stroke-width="1.5" font-family="sans-serif" font-weight="bold">
+                                <polygon points="100,50 120,65 120,95 100,110 80,95 80,65" />
+                                <circle cx="100" cy="80" r="15" />
+                                <text x="80" y="30" fill="#e11d48" stroke="none">COOH</text>
+                                <line x1="100" y1="50" x2="100" y2="35" />
+                                <text x="45" y="115" fill="#e11d48" stroke="none">HO</text>
+                                <line x1="80" y1="95" x2="70" y2="105" />
+                                <line x1="120" y1="95" x2="135" y2="100" />
+                                <text x="138" y="105" fill="#e11d48" stroke="none">O &minus;C&minus;CH<tspan
+                                        baseline-shift="sub" font-size="0.7em">2</tspan>NH<tspan baseline-shift="sub"
+                                        font-size="0.7em">2</tspan></text>
+                                <line x1="172" y1="93" x2="172" y2="78" />
+                                <line x1="178" y1="93" x2="178" y2="78" />
+                                <text x="169" y="72" fill="#e11d48" stroke="none">O</text>
+                            </svg>
+                        </div>
+                        Which of the following expresses the correct results when conducting the following experiments
+                        on
+                        this compound?
+                        <table>
+                            <tr>
+                                <th>Exp. choices</th>
+                                <th>1- Addition of sodium bicarbonate</th>
+                                <th>2-Reduction with hydrogen then addition of iron III chloride solution</th>
+                                <th>3-Hydrolysis in an acidic medium</th>
+                            </tr>
+                            <tr>
+                                <td>A</td>
+                                <td>effervescence occurs and a gas evolves, clouding the clear lime water</td>
+                                <td>The solution turns purple</td>
+                                <td>Benzoic acid is formed</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>No effervescence occurs</td>
+                                <td>The solution turns purple</td>
+                                <td>Acetic acid is formed</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>No effervescence occurs</td>
+                                <td>The color does not change</td>
+                                <td>Glycine is formed.</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>Effervescence occurs and a gas rises, clouding the clear lime water</td>
+                                <td>The solution turns purple</td>
+                                <td>Glycine is formed.</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="c grid-4">
+                        <div class="choice-option">(a) </div>
+                        <div class="choice-option">(b) </div>
+                        <div class="choice-option">(c) </div>
+                        <div class="choice-option">(d) </div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (d) Effervescence occurs..., The solution turns purple, Glycine
+                            is
+                            formed.</span>
+                        <span class="exp-title">Explanation:</span>
+                        1) The compound has a free -COOH group, so it reacts with NaHCO<sub>3</sub> releasing
+                        CO<sub>2</sub>
+                        (effervescence).
+                        2) It has a free phenolic -OH group on the ring, which gives a characteristic purple color with
+                        FeCl<sub>3</sub> solution.
+                        3) The side chain attached to the oxygen is an ester linkage
+                        `-O-CO-CH<sub>2</sub>-NH<sub>2</sub>`.
+                        Acidic hydrolysis cleaves this ester bond, separating the phenol ring and yielding the amino
+                        acid
+                        Glycine (NH<sub>2</sub>-CH<sub>2</sub>-COOH).
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        32- Which of the following expresses the correct order of chemical processes necessary to
+                        prepare a
+                        substance used in printing inks from the compound resulting from the catalytic hydration of the
+                        simplest alkyne?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Reduction &ndash; esterification &ndash; Acidic hydrolysis&ndash;
+                            thermal cracking</div>
+                        <div class="choice-option">(b) Oxidation &ndash; dry distillation &ndash; neutralization
+                            &ndash;passing water vapor</div>
+                        <div class="choice-option">(c) Reduction &ndash; dehydration &ndash; hydrogenation &ndash;
+                            Halogenation</div>
+                        <div class="choice-option">(d) Oxidation &ndash; neutralization &ndash; dry distillation &ndash;
+                            thermal cracking</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (d) Oxidation &ndash; neutralization &ndash; dry distillation
+                            &ndash; thermal cracking</span>
+                        <span class="exp-title">Explanation:</span>
+                        The simplest alkyne is ethyne (acetylene). Catalytic hydration of ethyne yields Acetaldehyde.
+                        The
+                        target substance used in printing inks is Carbon black.
+                        Sequence: Oxidize acetaldehyde to get Acetic acid. Neutralize it with NaOH to get Sodium
+                        acetate.
+                        Perform dry distillation to get Methane gas. Finally, heat methane to 1000&deg;C in the absence
+                        of
+                        air (thermal cracking/decomposition) to produce Carbon black.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-analysis">
+                    <div class="q">
+                        33- Which of the following solutions can be added to a solution containing cations
+                        (Al<sup>3+</sup>,
+                        Fe<sup>2+</sup>, Ca<sup>2+</sup>) to precipitate only one of these cations?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Sodium carbonate</div>
+                        <div class="choice-option">(b) An abundance of sodium hydroxide</div>
+                        <div class="choice-option">(c) An abundance of ammonium hydroxide</div>
+                        <div class="choice-option">(d) Potassium chloride</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) An abundance of sodium hydroxide</span>
+                        <span class="exp-title">Explanation:</span>
+                        When an abundance of NaOH is added: Al<sup>3+</sup> initially precipitates as Al(OH)<sub>3</sub>
+                        but
+                        then dissolves in excess to form soluble Sodium aluminate. Ca<sup>2+</sup> does not precipitate
+                        since Ca(OH)<sub>2</sub> is soluble at these typical testing concentrations. Only
+                        Fe<sup>2+</sup>
+                        remains as a stable, insoluble precipitate of Iron (II) hydroxide, Fe(OH)<sub>2</sub>.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="transition-elements">
+                    <div class="q">
+                        34- Two consecutive elements (X, Y) from the first transition series, element (X) has the
+                        highest
+                        oxidation state in the series. Which of the following is correct?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Element (Y) is diamagnetic and its atom contains 6 unpaired
+                            electrons
+                        </div>
+                        <div class="choice-option">(b) Element (X) is diamagnetic and its atom contains 6 unpaired
+                            electrons.</div>
+                        <div class="choice-option">(c) The Y<sup>2+</sup> ion is paramagnetic and contains 4 unpaired
+                            electrons.</div>
+                        <div class="choice-option">(d) The X<sup>3+</sup> ion is paramagnetic and contains 5 unpaired
+                            electrons.</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) The Y<sup>2+</sup> ion is paramagnetic and contains 4
+                            unpaired
+                            electrons.</span>
+                        <span class="exp-title">Explanation:</span>
+                        Element X has the highest oxidation state (+7), meaning X is Manganese (Mn, 3d<sup>5</sup>
+                        4s<sup>2</sup>). Element Y is the consecutive element, which must be Iron (Fe, 3d<sup>6</sup>
+                        4s<sup>2</sup>). The Fe<sup>2+</sup> ion loses the 4s electrons, leaving 3d<sup>6</sup>.
+                        According
+                        to Hund's rule, a d<sup>6</sup> configuration has 4 unpaired electrons, making it strongly
+                        paramagnetic.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        35- When adding 200 mL of 0.2 M sulphuric acid to 300 mL of 0.2M calcium hydroxide according to
+                        the
+                        following equation:<br>
+                        <center>H<sub>2</sub>SO<sub>4</sub> + Ca(OH)<sub>2</sub> &rarr; CaSO<sub>4</sub> +
+                            2H<sub>2</sub>O
+                        </center><br>
+                        - Which of the following expresses the concentration of the remaining substance without
+                        reaction?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) 0.080 M</div>
+                        <div class="choice-option">(b) 0.040 M</div>
+                        <div class="choice-option">(C) 0.066 M</div>
+                        <div class="choice-option">(d) 0.0100 M</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) 0.040 M</span>
+                        <span class="exp-title">Explanation:</span>
+                        Moles of H<sub>2</sub>SO<sub>4</sub> = 0.2 L &times; 0.2 M = 0.04 mol. <br>
+                        Moles of Ca(OH)<sub>2</sub> = 0.3 L &times; 0.2 M = 0.06 mol. <br>
+                        The reaction is 1:1, so 0.04 mol of each react. The remaining excess is Ca(OH)<sub>2</sub> with
+                        0.02
+                        mol unreacted (0.06 - 0.04). <br>
+                        The total volume of the mixture is 200 + 300 = 500 mL = 0.5 L. <br>
+                        New concentration = moles / volume = 0.02 / 0.5 = 0.04 M.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        36- Which of the following reactions has a (Kc) value equal to the concentration of the
+                        products?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) C <sub>(s)</sub> + O<sub>2(g)</sub> &rightleftharpoons;
+                            CO<sub>2(g)</sub></div>
+                        <div class="choice-option">(b) CaCO<sub>3(s)</sub> &rightleftharpoons; CaO<sub>(s)</sub> +
+                            CO<sub>2(g)</sub></div>
+                        <div class="choice-option">(C) H<sub>2(g)</sub> + O<sub>2(g)</sub> &rightleftharpoons;
+                            2H<sub>2</sub>O<sub>(g)</sub></div>
+                        <div class="choice-option">(d) N<sub>2(g)</sub> + 3H<sub>2(g)</sub> &rightleftharpoons;
+                            2NH<sub>3(g)</sub></div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) CaCO<sub>3(s)</sub> &rightleftharpoons; CaO<sub>(s)</sub> +
+                            CO<sub>2(g)</sub></span>
+                        <span class="exp-title">Explanation:</span>
+                        The equilibrium constant Kc expression omits solids and pure liquids. For reaction (b),
+                        CaCO<sub>3</sub> and CaO are solids, so they are excluded. The expression simplifies strictly to
+                        Kc
+                        = [CO<sub>2</sub>]. Thus, Kc depends solely on the concentration of the product.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="chemical-equilibrium">
+                    <div class="q">
+                        37- 5L of saturated zinc sulphide (ZnS) solution was cooled from 60&deg;C to 25&deg;C, 1.53 x
+                        10<sup>-5</sup> g of the salt is precipitated. If you know that the solubility product Ksp of
+                        the
+                        salt at 25&deg;C is equal to 1 x 10<sup>-21</sup><br>
+                        - Which of the following expresses the solubility product constant (Ksp) of ZnS at 60&deg;C?
+                        <span style="float:right; color:#e11d48;">(ZnS = 97 g/mol)</span>
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) 1 X 10<sup>-15</sup></div>
+                        <div class="choice-option">(b) 1 X 10<sup>-21</sup></div>
+                        <div class="choice-option">(C) 3.16X10<sup>-8</sup></div>
+                        <div class="choice-option">(d) 3.16X10<sup>-11</sup></div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) 1 X 10<sup>-15</sup></span>
+                        <span class="exp-title">Explanation:</span>
+                        At 25&deg;C, Ksp = 10<sup>-21</sup>. Solubility (S) = &radic;Ksp = &radic;10<sup>-21</sup> =
+                        3.16
+                        &times; 10<sup>-11</sup> mol/L. <br>
+                        Mass precipitated = 1.53 &times; 10<sup>-5</sup> g. Moles precipitated = (1.53 &times;
+                        10<sup>-5</sup>) / 97 = 1.577 &times; 10<sup>-7</sup> mol. <br>
+                        Concentration that precipitated out = 1.577 &times; 10<sup>-7</sup> mol / 5 L &approx; 3.15
+                        &times;
+                        10<sup>-8</sup> mol/L. <br>
+                        Solubility at 60&deg;C = Solubility at 25&deg;C + Concentration precipitated &approx; (3.16
+                        &times;
+                        10<sup>-11</sup>) + (3.15 &times; 10<sup>-8</sup>) &approx; 3.15 &times; 10<sup>-8</sup> mol/L
+                        (since the 25&deg;C solubility is negligible in comparison). <br>
+                        Ksp at 60&deg;C = S<sup>2</sup> = (3.15 &times; 10<sup>-8</sup>)<sup>2</sup> &approx; 9.9
+                        &times;
+                        10<sup>-16</sup>, which is closest to 1 &times; 10<sup>-15</sup>.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        38- When plating a jug with a layer of silver its mass 26.25 g by passing an electric current of
+                        25
+                        amperes through an electrolyte containing silver ions, which of the following is the time
+                        required
+                        to complete this process?<br>
+                        <center>(Ag = 108 g/mol)</center>
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) 14.2 minutes</div>
+                        <div class="choice-option">(b) 15.2 minutes</div>
+                        <div class="choice-option">(c) 15.6 minutes</div>
+                        <div class="choice-option">(d) 13.2 minutes</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) 15.6 minutes</span>
+                        <span class="exp-title">Explanation:</span>
+                        Faraday's Law: Mass = (Current &times; Time &times; Equivalent Mass) / 96500. <br>
+                        Equivalent mass of Ag = 108 / 1 = 108 g. <br>
+                        26.25 = (25 &times; Time &times; 108) / 96500. <br>
+                        Time (in seconds) = (26.25 &times; 96500) / (25 &times; 108) = 2533125 / 2700 = 938.19 seconds.
+                        <br>
+                        Time in minutes = 938.19 / 60 &approx; 15.63 minutes.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="electrochemistry">
+                    <div class="q">
+                        39- The following figure shows two galvanic cells:
+                        <div style="text-align: center; margin: 15px 0;">
+                            <svg width="500" height="200" viewBox="0 0 500 200" font-family="sans-serif"
+                                font-weight="bold" fill="none" stroke="#e11d48" stroke-width="2">
+                                <!-- Cell 2 Beakers -->
+                                <path d="M 50,80 L 50,160 L 110,160 L 110,80" />
+                                <path d="M 140,80 L 140,160 L 200,160 L 200,80" />
+                                <line x1="50" y1="120" x2="110" y2="120" stroke-dasharray="4" />
+                                <line x1="140" y1="120" x2="200" y2="120" stroke-dasharray="4" />
+
+                                <!-- Electrodes C & B -->
+                                <rect x="70" y="60" width="20" height="80" fill="#ddd" />
+                                <rect x="160" y="60" width="20" height="80" fill="#ddd" />
+                                <text x="30" y="50" fill="#e11d48" stroke="none" font-size="12">Substance</text>
+                                <text x="50" y="65" fill="#e11d48" stroke="none" font-size="12">(C)</text>
+                                <text x="210" y="50" fill="#e11d48" stroke="none" font-size="12">Substance</text>
+                                <text x="230" y="65" fill="#e11d48" stroke="none" font-size="12">(B)</text>
+
+                                <!-- U-tube -->
+                                <path d="M 95,100 L 95,70 Q 125,40 155,70 L 155,100" stroke-width="6"
+                                    stroke="#f0b2b2" />
+
+                                <!-- Voltmeter 1.11V -->
+                                <rect x="105" y="10" width="40" height="20" rx="5" fill="white" />
+                                <text x="110" y="25" fill="#e11d48" stroke="none" font-size="10">1.11 V</text>
+                                <path d="M 80,60 L 80,20 L 105,20" />
+                                <path d="M 145,20 L 170,20 L 170,60" />
+                                <text x="150" y="15" fill="#e11d48" stroke="none" font-size="12">e&minus;&rarr;</text>
+                                <rect x="90" y="170" width="70" height="25" fill="#1b2a49" stroke="none" />
+                                <text x="105" y="187" fill="white" stroke="none" font-size="12">Cell (2)</text>
+
+                                <!-- Cell 1 Beakers -->
+                                <path d="M 280,80 L 280,160 L 340,160 L 340,80" />
+                                <path d="M 370,80 L 370,160 L 430,160 L 430,80" />
+                                <line x1="280" y1="120" x2="340" y2="120" stroke-dasharray="4" />
+                                <line x1="370" y1="120" x2="430" y2="120" stroke-dasharray="4" />
+
+                                <!-- Electrodes B & A -->
+                                <rect x="300" y="60" width="20" height="80" fill="#ddd" />
+                                <rect x="390" y="60" width="20" height="80" fill="#ddd" />
+                                <text x="440" y="50" fill="#e11d48" stroke="none" font-size="12">Substance</text>
+                                <text x="460" y="65" fill="#e11d48" stroke="none" font-size="12">(A)</text>
+
+                                <!-- U-tube -->
+                                <path d="M 325,100 L 325,70 Q 355,40 385,70 L 385,100" stroke-width="6"
+                                    stroke="#f0b2b2" />
+
+                                <!-- Voltmeter 0.90V -->
+                                <rect x="335" y="10" width="40" height="20" rx="5" fill="white" />
+                                <text x="340" y="25" fill="#e11d48" stroke="none" font-size="10">0.90V</text>
+                                <path d="M 310,60 L 310,20 L 335,20" />
+                                <path d="M 375,20 L 400,20 L 400,60" />
+                                <text x="375" y="15" fill="#e11d48" stroke="none" font-size="12">&larr;e&minus;</text>
+
+                                <rect x="320" y="170" width="70" height="25" fill="#1b2a49" stroke="none" />
+                                <text x="335" y="187" fill="white" stroke="none" font-size="12">Cell (1)</text>
+                            </svg>
+                        </div>
+                        -Which of the following is correct for the electrodes (A,B,C)?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) (A) is the strongest reducing agent</div>
+                        <div class="choice-option">(b) (C) has the lowest oxidation potential</div>
+                        <div class="choice-option">(c) (B) is the least active electrode</div>
+                        <div class="choice-option">(d) (C) electrode mass increases</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (c) (B) is the least active electrode</span>
+                        <span class="exp-title">Explanation:</span>
+                        Electrons always flow from Anode (more active) to Cathode (less active).
+                        In Cell 1, electrons flow from A to B. So, Activity A &gt; B.
+                        In Cell 2, electrons flow from C to B. So, Activity C &gt; B.
+                        In both cases, metal B acts as the cathode because it is less active than both A and C.
+                        Therefore, B
+                        is the least active of the three.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        40- Three organic compounds (A), (B), and (C) have the molecular formula
+                        C<sub>4</sub>H<sub>8</sub>O<sub>2</sub><br>
+                        (A): reacts with sodium hydroxide on cold.<br>
+                        (B): does not react with sodium hydroxide on cold.<br>
+                        (C): undergoes esterification and produces the simplest alcohol.<br>
+                        - Which of the following is correct?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) A: butyric acid , B: ethyl ethanoate</div>
+                        <div class="choice-option">(b) C: Methyl propanoate , B: methyl propanoate</div>
+                        <div class="choice-option">(c) A: 2-methyl propanoic acid , C: Ethyl ethanoate</div>
+                        <div class="choice-option">(d) C: Methyl propanoate , B: Butanoic acid</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) A: butyric acid , B: ethyl ethanoate</span>
+                        <span class="exp-title">Explanation:</span>
+                        Formula C<sub>4</sub>H<sub>8</sub>O<sub>2</sub> indicates an ester or a carboxylic acid.
+                        Compound A reacts with cold NaOH, meaning it is a carboxylic acid (e.g., butyric acid).
+                        Compound B does not react on cold, meaning it is an ester (e.g., ethyl ethanoate), which only
+                        hydrolyzes with strong base upon heating. Choice (a) perfectly identifies a valid acid for A and
+                        a
+                        valid ester for B.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        41- The following processes were carried out on organic substance (X) in order (complete
+                        oxidation -
+                        neutralization - dry distillation - catalytic reforming - complete hydrogenation), and the
+                        corresponding compound was one of the products:
+                        <div style="float: right; margin: 0 40px;">
+                            <svg width="120" height="100" viewBox="0 0 160 100" stroke="#e11d48" fill="none"
+                                stroke-width="2" font-family="sans-serif" font-weight="bold">
+                                <polygon points="30,50 45,25 75,25 90,50 75,75 45,75" />
+                                <line x1="75" y1="25" x2="90" y2="15" />
+                                <text x="92" y="15" fill="#e11d48" stroke="none" font-size="14">CH<tspan
+                                        baseline-shift="sub" font-size="0.7em">3</tspan></text>
+                                <line x1="90" y1="50" x2="105" y2="50" />
+                                <text x="107" y="55" fill="#e11d48" stroke="none" font-size="14">CH<tspan
+                                        baseline-shift="sub" font-size="0.7em">3</tspan></text>
+                            </svg>
+                        </div>
+                        <br>- Which of the following compounds could be substance (X)?
+                    </div>
+                    <div class="c" style="clear: both;">
+                        <div class="choice-option">(a) 3, 4-dimethyl-1-heptanol</div>
+                        <div class="choice-option">(b) 2, 3-dimethyl-1-hexanol</div>
+                        <div class="choice-option">(c) 3, 4-dimethyl-1-hexanol</div>
+                        <div class="choice-option">(d) 3, 5-dimethyl-1-heptanol</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (a) 3, 4-dimethyl-1-heptanol</span>
+                        <span class="exp-title">Explanation:</span>
+                        Working backwards: The final product is 1,2-dimethylcyclohexane. It comes from the complete
+                        hydrogenation of 1,2-dimethylbenzene (o-xylene). O-xylene comes from catalytic reforming of
+                        2,3-dimethylhexane (an 8-carbon alkane with a 6-carbon straight chain).
+                        The alkane 2,3-dimethylhexane is produced by dry distillation of sodium 3,4-dimethylheptanoate.
+                        (Dry
+                        distillation removes C1).
+                        This salt comes from the neutralization of 3,4-dimethylheptanoic acid, which is produced by the
+                        complete oxidation of the primary alcohol 3,4-dimethyl-1-heptanol.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        42- Which of the following expresses the correct order of chemical processes necessary to obtain
+                        an
+                        organic substance used as a food preservative and prevents the growth of fungi?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) Trimerization of acetylene - Halogenation in presence of a
+                            catalyst -
+                            Alkaline hydrolysis - reduction</div>
+                        <div class="choice-option">(b) Catalytic reformation of hexane - alkylation - oxidation -
+                            neutralization</div>
+                        <div class="choice-option">(c) Reduction of phenol - alkylation - oxidation - reduction</div>
+                        <div class="choice-option">(d) Fractional distillation of coal tar - Halogenation in presence of
+                            a
+                            catalyst &ndash; Alkaline hydrolysis - alkylation</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) Catalytic reformation of hexane - alkylation - oxidation -
+                            neutralization</span>
+                        <span class="exp-title">Explanation:</span>
+                        The organic substance used as a food preservative is Sodium benzoate.
+                        Preparation steps: Catalytic reforming of normal hexane produces Benzene. Alkylation of benzene
+                        (Friedel-Crafts with CH<sub>3</sub>Cl) gives Toluene. Oxidation of toluene (with
+                        V<sub>2</sub>O<sub>5</sub> at 400&deg;C) gives Benzoic acid. Neutralizing benzoic acid with NaOH
+                        yields Sodium benzoate.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        43- The general formula C<sub>4</sub>H<sub>10</sub>O represents three alcoholic isomers (A),
+                        (B),
+                        and (C)<br>
+                        (A) : Contains two methyl groups.<br>
+                        (B) : Contains three methyl groups<br>
+                        (C) : Contains one methyl group.<br>
+                        - Which of the following expresses the correct IUPAC name for the product of adding acidified
+                        potassium permanganate to each of (A), (B), and (C)?
+                        <table>
+                            <tr>
+                                <th>Choices</th>
+                                <th>In case of (A)</th>
+                                <th>In case of (B)</th>
+                                <th>In case of (C)</th>
+                            </tr>
+                            <tr>
+                                <td>A</td>
+                                <td>2-butanone</td>
+                                <td>2-methyl-2- propanoic</td>
+                                <td>No reaction</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>2-methyl -2-propanoic</td>
+                                <td>No reaction</td>
+                                <td>2-butanone</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>No reaction</td>
+                                <td>2-methyl -2-propanoic</td>
+                                <td>2-butanone</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>2-methyl propanoic</td>
+                                <td>No reaction</td>
+                                <td>Butanoic acid</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="c" style="clear: both;">
+                        <div class="choice-option">(a) </div>
+                        <div class="choice-option">(b) </div>
+                        <div class="choice-option">(c) </div>
+                        <div class="choice-option">(d) </div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (d) 2-methyl propanoic | No reaction | Butanoic acid</span>
+                        <span class="exp-title">Explanation:</span>
+                        Based on the methyl group count for formula C<sub>4</sub>H<sub>10</sub>O:
+                        (A) has 2 methyls: 2-methyl-1-propanol. Oxidation gives 2-methylpropanoic acid.
+                        (B) has 3 methyls: 2-methyl-2-propanol (tert-butyl alcohol). Being a tertiary alcohol, it
+                        resists
+                        oxidation under standard conditions (No reaction).
+                        (C) has 1 methyl: 1-butanol. Oxidation yields Butanoic acid.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="organic-chemistry">
+                    <div class="q">
+                        44- Which of the following alcohols oxidize with acidified potassium dichromate, and when
+                        dehydrated
+                        with concentrated sulfuric acid at 180&deg;C, do not give 2-methyl-1-butene?
+                    </div>
+                    <div class="c">
+                        <div class="choice-option">(a) 2,2- Dimethyl-2-butanol</div>
+                        <div class="choice-option">(b) 2,2-Dimethyl-1-propanol</div>
+                        <div class="choice-option">(c) 2-Methyl-2-propanol</div>
+                        <div class="choice-option">(d) 2-Methyl-1-butanol</div>
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer: (b) 2,2-Dimethyl-1-propanol</span>
+                        <span class="exp-title">Explanation:</span>
+                        The compound must be oxidizable, meaning it is a primary or secondary alcohol. (This eliminates
+                        the
+                        tertiary alcohols a and c).
+                        Between (b) and (d): 2,2-dimethyl-1-propanol (Neopentyl alcohol) is a primary alcohol that
+                        oxidizes,
+                        but it has absolutely no beta-hydrogens on the adjacent carbon (which is bonded to 3 methyls).
+                        Therefore, it cannot undergo standard E2 dehydration to yield simple alkenes without complex
+                        rearrangement, and definitely does not normally give 2-methyl-1-butene in basic high school
+                        chemistry. 2-methyl-1-butanol (d) directly dehydrates to 2-methyl-1-butene.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="essay">
+                    <div
+                        style="text-decoration: underline; color: var(--q-color); font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+                        Essay questions:
+                    </div>
+                    <div class="q">
+                        45- The following diagram represents some of iron and its compounds reactions:
+                        <div style="text-align: center; margin: 20px 0;">
+                            <svg width="450" height="220" viewBox="0 0 450 220" font-family="sans-serif"
+                                font-weight="bold">
+                                <rect x="70" y="50" width="60" height="30" stroke="#e11d48" fill="none"
+                                    stroke-width="2" />
+                                <text x="95" y="70" fill="#e11d48">A</text>
+
+                                <rect x="220" y="50" width="50" height="30" stroke="#e11d48" fill="none"
+                                    stroke-width="2" />
+                                <text x="240" y="70" fill="#e11d48">C</text>
+
+                                <rect x="360" y="50" width="80" height="30" stroke="#e11d48" fill="none"
+                                    stroke-width="2" />
+                                <text x="375" y="70" fill="#e11d48">B (Black)</text>
+
+                                <rect x="220" y="160" width="50" height="30" stroke="#e11d48" fill="none"
+                                    stroke-width="2" />
+                                <text x="240" y="180" fill="#e11d48">D</text>
+
+                                <!-- Arrows -->
+                                <line x1="140" y1="65" x2="210" y2="65" stroke="#e11d48" stroke-width="2"
+                                    marker-end="url(#arrow)" />
+                                <text x="155" y="55" fill="#e11d48" font-size="14">H<tspan baseline-shift="sub"
+                                        font-size="0.7em">2</tspan>SO<tspan baseline-shift="sub" font-size="0.7em">4
+                                    </tspan>
+                                </text>
+                                <text x="165" y="80" fill="#e11d48" font-size="14">Dil.</text>
+
+                                <line x1="350" y1="65" x2="280" y2="65" stroke="#e11d48" stroke-width="2"
+                                    marker-end="url(#arrow)" />
+                                <text x="300" y="55" fill="#e11d48" font-size="14">H<tspan baseline-shift="sub"
+                                        font-size="0.7em">2</tspan>SO<tspan baseline-shift="sub" font-size="0.7em">4
+                                    </tspan>
+                                </text>
+                                <text x="310" y="80" fill="#e11d48" font-size="14">Dil.</text>
+
+                                <line x1="245" y1="85" x2="245" y2="150" stroke="#e11d48" stroke-width="2"
+                                    marker-end="url(#arrow)" />
+                                <text x="250" y="125" fill="#e11d48" font-size="16">&Delta;</text>
+
+                                <line x1="210" y1="175" x2="95" y2="85" stroke="#e11d48" stroke-width="2"
+                                    marker-end="url(#arrow)" />
+                                <text x="110" y="150" fill="#e11d48" font-size="14"
+                                    transform="rotate(-38, 110, 150)">Process (2)</text>
+
+                                <line x1="380" y1="85" x2="280" y2="175" stroke="#e11d48" stroke-width="2"
+                                    marker-end="url(#arrow)" />
+                                <text x="310" y="140" fill="#e11d48" font-size="14"
+                                    transform="rotate(40, 310, 140)">Process
+                                    (1)</text>
+
+                                <defs>
+                                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3"
+                                        orient="auto">
+                                        <path d="M0,0 L0,6 L9,3 z" fill="#e11d48" />
+                                    </marker>
+                                </defs>
+                            </svg>
+                        </div>
+                        (a) Mention the names name each of the processes (1) and (2)<br>
+                        (b) Write the chemical formula for each of (C) and (D)
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer:</span>
+                        <span class="exp-title">Explanation:</span>
+                        By tracking the reactions: Compound (B) is a black oxide that reacts with dilute
+                        H<sub>2</sub>SO<sub>4</sub>, so it must be FeO (Iron II Oxide). Reacting FeO with dilute
+                        H<sub>2</sub>SO<sub>4</sub> gives FeSO<sub>4</sub> (Compound C). Heating FeSO<sub>4</sub>
+                        strongly
+                        yields Fe<sub>2</sub>O<sub>3</sub> (Compound D). Element A is Iron (Fe), which also reacts with
+                        dil.
+                        H<sub>2</sub>SO<sub>4</sub> to give FeSO<sub>4</sub>.
+                        <br><br>
+                        (a) Process 1 is the conversion of FeO (B) to Fe<sub>2</sub>O<sub>3</sub> (D), which is
+                        <b>Oxidation</b>. Process 2 is the conversion of Fe<sub>2</sub>O<sub>3</sub> (D) to Fe (A),
+                        which is
+                        <b>Reduction</b>. <br>
+                        (b) Chemical formula of (C): <b>FeSO<sub>4</sub></b>. Chemical formula of (D):
+                        <b>Fe<sub>2</sub>O<sub>3</sub></b>.
+                    </div>
+                </div>
+
+                <div class="q-container" data-topic="essay">
+                    <div
+                        style="text-decoration: underline; color: var(--q-color); font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+                        Essay questions:
+                    </div>
+                    <div class="q">
+                        46- Study the following diagram:
+                        <div class="diagram-box" style="gap:10px; flex-wrap:wrap; font-size:14px;">
+                            <div class="box">(A)</div>
+                            <div class="arrow-container"><span
+                                    class="arrow">&rarr;</span><span>Alcoholic<br>fermentation</span></div>
+                            <div class="box">(B)</div>
+                            <div class="arrow-container"><span class="arrow">&rarr;</span><span>(C)</span></div>
+                            <div class="box">(D)</div>
+                            <div class="arrow-container"><span
+                                    class="arrow">&rarr;</span><span>H<sub>2</sub>O<sub>2</sub></span></div>
+                            <div class="box">C<sub>n</sub>H<sub>2n+2</sub>O<sub>2</sub><br>(E)</div>
+                            <div class="arrow-container"><span class="arrow">&rarr;</span><span>(F)</span></div>
+                        </div>
+                        - If you know that (F) is a dibasic carboxylic acid<br>
+                        (a) Write the names of organic compounds (A) and (D)<br>
+                        (b) Name the compounds (C) and (E)
+                    </div>
+                    <div class="answer-box">
+                        <span class="ans-title">Answer:</span>
+                        <span class="exp-title">Explanation:</span>
+                        Working backwards: (F) is Oxalic acid (a dibasic acid). It is prepared by the complete oxidation
+                        of
+                        Ethylene glycol (E). Ethylene glycol is prepared by oxidizing Ethene (D) with
+                        H<sub>2</sub>O<sub>2</sub>. Ethene is prepared by dehydrating Ethanol (C). Ethanol is produced
+                        by
+                        the alcoholic fermentation of Glucose (B), which is produced from the hydrolysis of Sucrose (A).
+                        <br><br>
+                        (a) Names of (A) and (D):
+                        <br><b>(A): Sucrose (or Cane Sugar)</b>
+                        <br><b>(D): Ethene (or Ethylene)</b>
+                        <br><br>
+                        (b) Names of (C) and (E):
+                        <br><b>(C): Ethanol (Ethyl alcohol)</b>
+                        <br><b>(E): Ethylene glycol (1,2-ethanediol)</b>
+                    </div>
+                </div>
+
+                <div class="nav-controls">
+                    <button id="prev-btn" class="btn">Previous</button>
+                    <button id="show-answer-btn" class="btn">Show Answer & Explanation</button>
+                    <button id="next-btn" class="btn">Next</button>
+                </div>
+            </div>
+
+            <div class="question-blocks">
+                <div class="block-title">Questions chapter</div>
+                <div class="block-item" data-filter="all">All Questions (46)</div>
+                <div class="block-item" data-filter="transition-elements">Transition Elements (7)</div>
+                <div class="block-item" data-filter="chemical-analysis">Chemical Analysis (8)</div>
+                <div class="block-item" data-filter="chemical-equilibrium">Chemical Equilibrium (7)</div>
+                <div class="block-item" data-filter="electrochemistry">Electrochemistry (8)</div>
+                <div class="block-item" data-filter="organic-chemistry">Organic Chemistry (16)</div>
+                <div class="block-item" data-filter="essay">Essay Questions </div>
+            </div>
+        </div>
+
+        <script>
+            // =========================================================================
+            // PREMIUM BROWSER SECURITY & ANTI-CHEAT ENGINE
+            // =========================================================================
+            (function () {
+                'use strict';
+
+                // Config
+                const MAX_VIOLATIONS = 3;
+                const STORAGE_KEY = 'chemistry_quiz_violations_count';
+                const LOCKOUT_KEY = 'chemistry_quiz_is_locked';
+
+                // State
+                let violationCount = parseInt(localStorage.getItem(STORAGE_KEY)) || 0;
+                let isExamLocked = localStorage.getItem(LOCKOUT_KEY) === 'true';
+                let devtoolsOpened = false;
+
+                // Elements
+                const toast = document.getElementById('security-toast');
+                const toastMessage = document.getElementById('security-toast-message');
+                const overlay = document.getElementById('security-overlay');
+                const card = document.getElementById('security-card');
+                const securityTitle = document.getElementById('security-title');
+                const securityMessage = document.getElementById('security-message');
+                const violationBadge = document.getElementById('security-violation-badge');
+                const resumeBtn = document.getElementById('security-resume-btn');
+                const contactAdmin = document.getElementById('security-contact');
+
+                // 1. Toast Notification Helper
+                function showToast(message) {
+                    if (!toast) return;
+                    toastMessage.textContent = message;
+                    toast.classList.add('show');
+
+                    // Automatically hide after 3 seconds
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 3000);
+                }
+
+                // 2. Lock Exam Functionality
+                function lockExam() {
+                    isExamLocked = true;
+                    localStorage.setItem(LOCKOUT_KEY, 'true');
+
+                    if (overlay) {
+                        overlay.classList.add('show');
+                        card.className = 'security-card locked';
+                        securityTitle.innerHTML = '<i class="fa-solid fa-lock" style="margin-right: 10px;"></i>EXAM PERMANENTLY LOCKED';
+                        securityMessage.innerHTML = 'You have exceeded the limit of ' + MAX_VIOLATIONS + ' security violations (such as switching tabs, opening developer tools, or attempting unauthorized shortcuts).<br><br><strong>Your exam session has been locked.</strong> Please contact Prof. Ayman Mansour to resolve this issue.';
+                        violationBadge.style.display = 'none';
+                        resumeBtn.style.display = 'none';
+                        contactAdmin.style.display = 'flex';
+                    }
+                }
+
+                // 3. Register Violation
+                function triggerViolation(reason) {
+                    if (isExamLocked) return;
+
+                    violationCount++;
+                    localStorage.setItem(STORAGE_KEY, violationCount);
+
+                    if (violationCount >= MAX_VIOLATIONS) {
+                        lockExam();
+                    } else {
+                        showOverlay(reason);
+                    }
+                }
+
+                // 4. Show Warning Overlay
+                function showOverlay(reason) {
+                    if (isExamLocked) return;
+
+                    if (overlay) {
+                        overlay.classList.add('show');
+                        card.className = 'security-card';
+                        securityTitle.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 10px;"></i>SECURITY VIOLATION';
+
+                        let reasonText = "You have violated security protocols.";
+                        if (reason === 'blur') {
+                            reasonText = "You have navigated away from the exam window or switched tabs. This is strictly prohibited to prevent academic dishonesty.";
+                        } else if (reason === 'devtools') {
+                            reasonText = "Developer tools opening detected. Inspecting elements or using developer consoles is strictly prohibited.";
+                        } else if (reason === 'print') {
+                            reasonText = "Print attempt detected. Extracting exam contents via print or screenshot modes is strictly prohibited.";
+                        }
+
+                        securityMessage.innerHTML = reasonText + "<br><br>Please acknowledge this warning and focus on your exam. Subsequent violations will lock your session permanently.";
+                        violationBadge.style.display = 'inline-block';
+                        violationBadge.textContent = `Violation Count: ${violationCount} / ${MAX_VIOLATIONS}`;
+                        resumeBtn.style.display = 'block';
+                        contactAdmin.style.display = 'none';
+                    }
+                }
+
+                // 5. Resume Button Handler
+                if (resumeBtn) {
+                    resumeBtn.addEventListener('click', () => {
+                        overlay.classList.remove('show');
+                        window.focus();
+                    });
+                }
+
+                // Check initial locked state on load
+                if (isExamLocked) {
+                    lockExam();
+                }
+
+                // ==========================================
+                // EVENT BLOCKERS (Mouse, Selection, Keyboard)
+                // ==========================================
+
+                // Disable right click
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    showToast('⚠️ Right-click context menu is disabled for security.');
+                });
+
+                // Disable selection and drag
+                document.addEventListener('selectstart', (e) => {
+                    e.preventDefault();
+                });
+                document.addEventListener('dragstart', (e) => {
+                    e.preventDefault();
+                });
+
+                // Disable copying, cutting, pasting
+                document.addEventListener('copy', (e) => {
+                    e.preventDefault();
+                    showToast('⚠️ Copying content is strictly prohibited.');
+                });
+                document.addEventListener('cut', (e) => {
+                    e.preventDefault();
+                    showToast('⚠️ Cutting content is strictly prohibited.');
+                });
+                document.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    showToast('⚠️ Pasting is disabled.');
+                });
+
+                // Block key combinations
+                document.addEventListener('keydown', (e) => {
+                    // Prevent F12
+                    if (e.key === 'F12' || e.keyCode === 123) {
+                        e.preventDefault();
+                        showToast('⚠️ Developer tools access is strictly prohibited!');
+                        triggerViolation('devtools');
+                        return false;
+                    }
+
+                    // Prevent Ctrl+Shift+I (Inspect), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspect Element)
+                    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+                        e.preventDefault();
+                        showToast('⚠️ Element inspection tools are strictly prohibited!');
+                        triggerViolation('devtools');
+                        return false;
+                    }
+
+                    // Prevent Ctrl+U (View Source)
+                    if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+                        e.preventDefault();
+                        showToast('⚠️ Viewing page source is strictly prohibited!');
+                        return false;
+                    }
+
+                    // Prevent Ctrl+S (Save page)
+                    if (e.ctrlKey && (e.key === 'S' || e.key === 's' || e.keyCode === 83)) {
+                        e.preventDefault();
+                        showToast('⚠️ Saving exam pages is strictly prohibited!');
+                        return false;
+                    }
+
+                    // Prevent Ctrl+P (Print page)
+                    if (e.ctrlKey && (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) {
+                        e.preventDefault();
+                        showToast('⚠️ Printing is strictly prohibited!');
+                        triggerViolation('print');
+                        return false;
+                    }
+
+                    // Prevent Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+A (Select All)
+                    if (e.ctrlKey && (e.key === 'C' || e.key === 'c' || e.key === 'X' || e.key === 'x' || e.key === 'A' || e.key === 'a' || e.keyCode === 67 || e.keyCode === 88 || e.keyCode === 65)) {
+                        e.preventDefault();
+                        showToast('⚠️ Copying and Selection shortcuts are disabled.');
+                        return false;
+                    }
+                });
+
+                // ==========================================
+                // PRINT DETECTION (Browser Events)
+                // ==========================================
+                window.addEventListener('beforeprint', (e) => {
+                    document.body.style.display = 'none';
+                    triggerViolation('print');
+                });
+                window.addEventListener('afterprint', () => {
+                    document.body.style.display = 'block';
+                });
+
+                // ==========================================
+                // TAB SWITCH & WINDOW FOCUS DETECTOR
+                // ==========================================
+                let isBlurred = false;
+                window.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if (!isExamLocked && !isBlurred) {
+                            isBlurred = true;
+                            triggerViolation('blur');
+                        }
+                    }, 200);
+                });
+
+                window.addEventListener('focus', () => {
+                    isBlurred = false;
+                });
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        if (!isExamLocked && !isBlurred) {
+                            isBlurred = true;
+                            triggerViolation('blur');
+                        }
+                    }
+                });
+
+                // ==========================================
+                // DEVTOOLS OPEN DETECTOR (Advanced Checks)
+                // ==========================================
+
+                // Check using debugger statement loop when devtools is active
+                setInterval(() => {
+                    const start = performance.now();
+                    debugger;
+                    const end = performance.now();
+                    if (end - start > 100) {
+                        if (!devtoolsOpened) {
+                            devtoolsOpened = true;
+                            showToast('⚠️ Developer tools detected! Close immediately.');
+                            triggerViolation('devtools');
+                        }
+                    }
+                }, 1000);
+
+                // Check using window size differences (resizing is often a sign of docking devtools)
+                const threshold = 160;
+                setInterval(() => {
+                    const widthDiff = window.outerWidth - window.innerWidth > threshold;
+                    const heightDiff = window.outerHeight - window.innerHeight > threshold;
+                    if (widthDiff || heightDiff) {
+                        if (!devtoolsOpened) {
+                            devtoolsOpened = true;
+                            showToast('⚠️ Developer tools docking detected!');
+                            triggerViolation('devtools');
+                        }
+                    } else {
+                        devtoolsOpened = false;
+                    }
+                }, 2000);
+
+                // Prevent dragging images
+                document.querySelectorAll('img').forEach(img => {
+                    img.addEventListener('contextmenu', e => e.preventDefault());
+                    img.addEventListener('dragstart', e => e.preventDefault());
+                });
+
+            })();
+
+            // Initialize variables
+            let currentQuestionIndex = 0;
+            const questions = document.querySelectorAll('.q-container');
+            const totalQuestions = questions.length;
+            const currentQElement = document.getElementById('current-q');
+            const totalQElement = document.getElementById('total-q');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const showAnswerBtn = document.getElementById('show-answer-btn');
+            const choiceOptions = document.querySelectorAll('.choice-option');
+            const blockItems = document.querySelectorAll('.block-item');
+
+            // Set initial state
+            updateQuestionDisplay();
+            totalQElement.textContent = totalQuestions;
+
+            // Event Listeners
+            prevBtn.addEventListener('click', goToPrevQuestion);
+            nextBtn.addEventListener('click', goToNextQuestion);
+            showAnswerBtn.addEventListener('click', toggleAnswer);
+
+            // Add event listeners to choice options
+            choiceOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    const parentQuestion = this.closest('.q-container');
+                    const allOptions = parentQuestion.querySelectorAll('.choice-option');
+
+                    // Check if already answered
+                    const isAnswered = Array.from(allOptions).some(opt => opt.classList.contains('correct-choice') || opt.classList.contains('wrong-choice'));
+                    if (isAnswered) return; // Prevent changing answer
+
+                    // Find the correct answer from the answer box
+                    const answerBox = parentQuestion.querySelector('.answer-box');
+                    let correctLetter = null;
+                    if (answerBox) {
+                        const ansTitle = answerBox.querySelector('.ans-title');
+                        if (ansTitle) {
+                            const match = ansTitle.textContent.match(/Answer:\s*(\([a-zA-Z]\))/i);
+                            if (match) correctLetter = match[1].toLowerCase();
+                        }
+                    }
+
+                    if (correctLetter) {
+                        const choiceMatch = this.textContent.match(/^(\([a-zA-Z]\))/i);
+                        if (choiceMatch && choiceMatch[1].toLowerCase() === correctLetter) {
+                            this.classList.add('correct-choice');
+                        } else {
+                            this.classList.add('wrong-choice');
+                            // Highlight the correct one
+                            allOptions.forEach(opt => {
+                                const optMatch = opt.textContent.match(/^(\([a-zA-Z]\))/i);
+                                if (optMatch && optMatch[1].toLowerCase() === correctLetter) {
+                                    opt.classList.add('correct-choice');
+                                }
+                            });
+                        }
+                    } else {
+                        this.classList.add('correct-choice'); // fallback
+                    }
+                });
+            });
+
+            // Block filter functionality
+            blockItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    // Remove active class from all items
+                    blockItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+
+                    const filter = this.getAttribute('data-filter');
+                    filterQuestions(filter);
+                });
+            });
+
+            // Functions
+            function updateQuestionDisplay() {
+                // Hide all questions
+                questions.forEach(q => q.style.display = 'none');
+
+                // Show current question
+                questions[currentQuestionIndex].style.display = 'block';
+
+                // Update current question counter
+                currentQElement.textContent = currentQuestionIndex + 1;
+
+                // Update button states
+                prevBtn.disabled = currentQuestionIndex === 0;
+                nextBtn.disabled = currentQuestionIndex === totalQuestions - 1;
+
+                // Reset answer button
+                showAnswerBtn.textContent = 'Show Answer & Explanation';
+                const answerBox = questions[currentQuestionIndex].querySelector('.answer-box');
+                answerBox.style.display = 'none';
+
+                // Clear any previous selections
+                const allOptions = questions[currentQuestionIndex].querySelectorAll('.choice-option');
+                allOptions.forEach(opt => {
+                    opt.classList.remove('correct-choice');
+                    opt.classList.remove('wrong-choice');
+                });
+            }
+
+            function goToPrevQuestion() {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    updateQuestionDisplay();
+                }
+            }
+
+            function goToNextQuestion() {
+                if (currentQuestionIndex < totalQuestions - 1) {
+                    currentQuestionIndex++;
+                    updateQuestionDisplay();
+                }
+            }
+
+            function toggleAnswer() {
+                const answerBox = questions[currentQuestionIndex].querySelector('.answer-box');
+                if (answerBox.style.display === 'block') {
+                    answerBox.style.display = 'none';
+                    showAnswerBtn.textContent = 'Show Answer & Explanation';
+                } else {
+                    answerBox.style.display = 'block';
+                    showAnswerBtn.textContent = 'Hide Answer & Explanation';
+                }
+            }
+
+            function filterQuestions(filter) {
+                questions.forEach(question => {
+                    if (filter === 'all') {
+                        question.style.display = 'block';
+                    } else {
+                        const topic = question.getAttribute('data-topic');
+                        if (topic === filter) {
+                            question.style.display = 'block';
+                        } else {
+                            question.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Reset to first visible question
+                const visibleQuestions = Array.from(questions).filter(q => q.style.display !== 'none');
+                if (visibleQuestions.length > 0) {
+                    currentQuestionIndex = Array.from(questions).indexOf(visibleQuestions[0]);
+                    updateQuestionDisplay();
+                }
+            }
+
+            // Set default active filter
+            blockItems[0].classList.add('active');
+        </script>
+
+</body>
+
+</html>
